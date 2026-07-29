@@ -1,0 +1,12 @@
+# Presentation Sage
+
+> YAML-driven slide editor with PPTX/HTML/Marp export
+
+- Live: https://slides.neorgon.com/
+- Part of the Neorgon tool suite (free, no signup, runs in your browser): https://neorgon.com/
+- Keywords: slides, yaml, pptx, marp, export
+
+## More Neorgon tools
+
+- [Neorgon hub](https://neorgon.com/): Browse and launch every tool from one page.
+- [Full suite index](https://neorgon.com/llms.txt): Machine-readable list of every Neorgon tool.
