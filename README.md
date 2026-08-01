@@ -131,7 +131,7 @@ marp slides.md --pdf
 ![Architecture](docs/architecture.svg)
 
 ```
-presentation-sage/
+slides-site/
 ├── index.html    # App shell
 ├── css/
 │   └── style.css # All styles
