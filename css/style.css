@@ -35,32 +35,6 @@ body {
   overflow: hidden;
 }
 
-/* ── Header ──────────────────────────────────────────────────────────── */
-.header-bar {
-  background: linear-gradient(in oklch 135deg, #B015B0 0%, #3D0080 50%, #040714 100%);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255,255,255,.07);
-  padding: 0 24px;
-  height: 68px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-}
-.header-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.header-logo-img { height: 36px; width: auto; flex-shrink: 0; filter: brightness(0) invert(1); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); display: block; }
-.header-logo-img:hover { transform: scale(1.14) rotate(-9deg); }
-.header-logo h1 { font-size: 1.2em; font-weight: 600; letter-spacing: 0.5px; }
-.header-subtitle { font-size: 0.82em; color: rgba(255,255,255,0.72); font-weight: 500; margin-top: 3px; }
-
-.header-home {
-  margin-left: auto;
-  display: flex; align-items: center; padding: 5px;
-  color: rgba(255,255,255,0.9); text-decoration: none;
-  border-radius: 6px; transition: color .2s, background .2s; flex-shrink: 0;
-}
-.header-home:hover { color: #fff; background: rgba(255,255,255,0.12); }
-.header-home svg { width: 34px; height: 34px; display: block; }
-
 /* ── Toolbar ─────────────────────────────────────────────────────────── */
 .toolbar {
   height: 44px; flex-shrink: 0;
@@ -791,9 +765,6 @@ button:active, .btn:active {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
-
-/* ── Template alignment (header title link + footer) ── */
-.header-title-link { text-decoration: none; color: inherit; }
 .info-footer {
   text-align: center;
   padding: 24px 24px 28px;

@@ -30,6 +30,12 @@
   <link rel="icon" type="image/x-icon" href="https://pub-b597cd281a384f98a47e1f043a6c4160.r2.dev/v1.0.0/favicon.ico" />
   <link rel="stylesheet" href="https://pub-b597cd281a384f98a47e1f043a6c4160.r2.dev/v1.0.0/styles/base.css">
     <link rel="stylesheet" href="css/style.css">
+  <!-- Neorgon Header Kit (vendored; ?header=live swaps CSS to CDN) -->
+  <script>(function(){var m=location.search.match(/[?&]theme=([\w-]+)/)||document.cookie.match(/(?:^|;\s*)neo_theme=([\w-]+)/);if(m&&m[1]!=='default')document.documentElement.dataset.theme=decodeURIComponent(m[1]);})();</script>
+  <link rel="stylesheet" href="css/neorgon-header.css">
+  <link rel="stylesheet" href="css/neorgon-themes.css">
+  <link rel="stylesheet" href="https://pub-b597cd281a384f98a47e1f043a6c4160.r2.dev/v1.0.0/header/season.css">
+  <script defer src="js/neorgon-header.js"></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -49,7 +55,7 @@
   <a class="skip-link" href="#main">Skip to content</a>
 
   <!-- Header -->
-  <header class="header-bar">
+  <header class="header-bar" data-header-mode="app">
     <div class="header-logo">
       <a href="https://neorgon.com/" target="_blank" rel="noopener noreferrer"><img src="https://pub-b597cd281a384f98a47e1f043a6c4160.r2.dev/v1.0.0/energon-classic-logo.png" class="header-logo-img" alt="Neorgon"></a>
       <a href="./" class="header-title-link">
@@ -57,12 +63,16 @@
         <div class="header-subtitle">Write slides as YAML, export anywhere</div>
       </a>
     </div>
-    <a href="./deck-library/" class="header-home" title="Deck Library" aria-label="Deck Library">
-      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 6h4v2H4zm0 5h4v2H4zm0 5h4v2H4zm6-10h10v2H10zm0 5h10v2H10zm0 5h10v2H10z"/></svg>
-    </a>
-    <a href="https://neorgon.com/" class="header-home" title="neorgon.com" aria-label="Neorgon home">
-      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-    </a>
+    <div class="header-right">
+      <div class="header-actions">
+        <a href="./deck-library/" class="nav-link nav-link--icon" data-keep-mobile title="Deck Library" aria-label="Deck Library">
+          <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="20" height="20"><path d="M4 6h4v2H4zm0 5h4v2H4zm0 5h4v2H4zm6-10h10v2H10zm0 5h10v2H10zm0 5h10v2H10z"/></svg>
+        </a>
+      </div>
+      <a href="https://neorgon.com/" class="header-home" title="neorgon.com" aria-label="Neorgon home">
+        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      </a>
+    </div>
   </header>
 
   <!-- Toolbar -->
