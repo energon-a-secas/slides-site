@@ -26,7 +26,7 @@ presentation:
   author: "..."           # optional
   date: "YYYY-MM"         # optional
   theme: "royal"          # optional deck-wide look — see "Deck themes" below
-  pattern: "dots"         # optional background texture: dots, grid, diagonal, rings — see "Patterns"
+  pattern: "dots"         # optional background texture: dots, grid, diagonal, rings, orbs — see "Patterns"
   logo: "https://…"       # optional: URL, data: URI (player's ◉ Logo button embeds a local file), or self-hosted path
   logo_all: true          # optional: watermark the logo on every non-title slide
   brand:                  # optional brand colors, override the theme — see "Brand colors"
@@ -186,6 +186,7 @@ derived from the background's luminance, so every pattern works on dark and ligh
 | `grid` | Thin ruled grid |
 | `diagonal` | 45° hairlines |
 | `rings` | Concentric rings from the top-right corner |
+| `orbs` | Two soft glow circles — big bottom-right, small upper-left; the non-tiling one |
 
 Patterns render in the player and the DOM-derived exports (standalone HTML, Reveal); PPTX
 and Marp get flat theme/brand colors — say so if someone asks why the PPTX looks plainer.

@@ -9,7 +9,7 @@ presentation:
   author: "Your Name"
   date: "YYYY-MM"
   # theme: royal          # optional deck-wide look — full list in CLAUDE.md (Deck themes)
-  # pattern: dots         # optional background texture: dots, grid, diagonal, rings
+  # pattern: dots         # optional background texture: dots, grid, diagonal, rings, orbs
   # logo: "https://…"     # URL or data: URI (toolbar ◉ Logo embeds a local file); logo_all: true watermarks every slide
   # brand:                # brand colors override the theme — decks for one brand stay consistent
   #   accent: "#e50914"

@@ -121,6 +121,17 @@ export const PATTERNS = {
     layers: ['repeating-radial-gradient(circle at 85% 12%, var(--sl-pattern-ink) 0 1px, transparent 1px 46px)'],
     sizes:  ['auto'],
   },
+  // Two soft glow circles rather than a repeating texture: one big in the
+  // bottom-right corner, one smaller upper-left. no-repeat, and drawn with the
+  // strong ink — a lone soft circle at texture alpha is invisible.
+  orbs: {
+    layers: [
+      'radial-gradient(circle 420px at 88% 96%, var(--sl-pattern-ink-strong), transparent 72%)',
+      'radial-gradient(circle 280px at 12% 18%, var(--sl-pattern-ink-strong), transparent 72%)',
+    ],
+    sizes:   ['auto', 'auto'],
+    repeats: ['no-repeat', 'no-repeat'],
+  },
 };
 
 /* Deck-declared brand colors. Only these keys may override the theme — the
@@ -146,26 +157,34 @@ function patternInk(bg) {
   if (m) {
     const n = parseInt(m[1], 16);
     const lum = (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
-    if (lum > 0.6) return 'rgba(15,23,42,.06)';
+    if (lum > 0.6) return { ink: 'rgba(15,23,42,.06)', strong: 'rgba(15,23,42,.12)' };
   }
-  return 'rgba(255,255,255,.055)';
+  return { ink: 'rgba(255,255,255,.055)', strong: 'rgba(255,255,255,.11)' };
 }
 
 /** Layer a background pattern over whatever background the element already has. */
 export function applyPattern(el, name) {
   const p = PATTERNS[name];
   if (!p) return;
+  // The background shorthand leaves backgroundImage as a CSS-wide keyword
+  // ('initial'), and a keyword inside a layer list invalidates the whole
+  // declaration — only a real image/gradient counts as an under-layer.
   const existing = el.style.backgroundImage;
-  const under = existing && existing !== 'none' ? [existing] : [];
+  const under =
+    existing && !['none', 'initial', 'inherit', 'unset'].includes(existing) ? [existing] : [];
   el.style.backgroundImage = [...p.layers, ...under].join(', ');
   el.style.backgroundSize = [...p.sizes, ...under.map(() => 'auto')].join(', ');
+  const repeats = p.repeats || p.layers.map(() => 'repeat');
+  el.style.backgroundRepeat = [...repeats, ...under.map(() => 'no-repeat')].join(', ');
 }
 
 /** Apply a theme's CSS custom properties to a slide element */
 export function applyTheme(el, name, brand) {
   const t = themeWithBrand(name, brand);
   el.style.background = t.bg;
-  el.style.setProperty('--sl-pattern-ink', patternInk(t.bg));
+  const ink = patternInk(t.bg);
+  el.style.setProperty('--sl-pattern-ink', ink.ink);
+  el.style.setProperty('--sl-pattern-ink-strong', ink.strong);
   el.style.setProperty('--sl-on-accent', t.onAccent || '#fff');
   el.style.setProperty('--sl-accent',    t.accent);
   el.style.setProperty('--sl-text',      t.text);
