@@ -13,6 +13,7 @@ presentation:
   # logo: "https://…"     # URL, data: URI (toolbar ◉ Logo embeds a local file), or "placeholder" for drafts
   # logo_all: true        # stamp it on every non-title slide · logo_pos: bottom-left picks the corner
   # logo_size: 96         # bigger logo on the title slide only (px height, 16–240)
+  # logo_stamp_size: 44   # bigger stamp on the other slides (px height, 12–120)
   # brand:                # brand colors override the theme — decks for one brand stay consistent
   #   accent: "#e50914"
 

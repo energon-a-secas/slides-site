@@ -206,6 +206,11 @@ export function renderSlide(slide, index, total) {
     wm.alt = '';
     const pos = LOGO_POS[state.meta.logo_pos];
     if (pos) Object.assign(wm.style, pos);
+    const ss = state.meta.logo_stamp_size;
+    if (typeof ss === 'number' && ss >= 12 && ss <= 120) {
+      wm.style.maxHeight = `${ss}px`;
+      wm.style.maxWidth = `${Math.round(ss * 2.7)}px`;
+    }
     el.appendChild(wm);
   }
 

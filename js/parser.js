@@ -23,6 +23,7 @@ export function parseYAML(text) {
         logo_all: !!p.logo_all,
         logo_pos: p.logo_pos || '',
         logo_size: p.logo_size || 0,
+        logo_stamp_size: p.logo_stamp_size || 0,
         brand:    p.brand    || null,
         pattern:  p.pattern  || '',
       },
@@ -109,7 +110,10 @@ export function validate(slides, meta) {
     add('warn', null, `Unknown logo_pos "${meta.logo_pos}" — using the default (top-right). Corners: top-left, top-right, bottom-left, bottom-right.`);
 
   if (meta?.logo_size && (typeof meta.logo_size !== 'number' || meta.logo_size < 16 || meta.logo_size > 240))
-    add('warn', null, `logo_size ${JSON.stringify(meta.logo_size)} — expected a pixel height between 16 and 240; using the default.`);
+    add('warn', null, `logo_size ${JSON.stringify(meta.logo_size)} — expected a pixel height between 16 and 240; using the default. Sizes the title-slide logo only; the stamp is logo_stamp_size.`);
+
+  if (meta?.logo_stamp_size && (typeof meta.logo_stamp_size !== 'number' || meta.logo_stamp_size < 12 || meta.logo_stamp_size > 120))
+    add('warn', null, `logo_stamp_size ${JSON.stringify(meta.logo_stamp_size)} — expected a pixel height between 12 and 120; using the default (30).`);
 
   if (meta?.logo && meta.logo !== 'placeholder' && !/^(data:|https?:\/\/|\.?\/)/.test(meta.logo))
     add('info', null,

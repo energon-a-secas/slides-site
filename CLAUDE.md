@@ -31,6 +31,7 @@ presentation:
   logo_all: true          # optional: stamp the logo on every non-title slide
   logo_pos: "bottom-left" # optional stamp corner: top-left, top-right (default), bottom-left, bottom-right
   logo_size: 96           # optional px height of the title-slide logo (16–240; default 52)
+  logo_stamp_size: 44     # optional px height of the stamp on other slides (12–120; default 30)
   brand:                  # optional brand colors, override the theme — see "Brand colors"
     accent: "#e50914"
     # bg: "#0b0b0f"       # text: / on_accent: also accepted; nothing else is
@@ -181,8 +182,9 @@ Placement and size: `logo_all: true` stamps the logo on every non-title slide, s
 persistent; `logo_pos:` picks its corner (`bottom-left` for the classic stamp; `top-right` is
 the default, and `bottom-right` sits above the slide number, which owns that corner).
 `logo_size:` sets the **title-slide** logo height in px (16–240, default 52) for decks where
-the brand should lead the first screen — it never affects the stamp, which stays small on
-purpose.
+the brand should lead the first screen. It never affects the stamp — that is
+`logo_stamp_size:` (12–120, default 30), a separate knob so growing the opening logo cannot
+quietly make every slide shout.
 
 ### Patterns
 
