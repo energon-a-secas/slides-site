@@ -2,7 +2,7 @@
    DOM rendering — editor panel, slide preview, filmstrip, warnings
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { state, THEMES, applyTheme, resolveBg } from './state.js';
+import { state, THEMES, applyTheme, applyPattern, themeWithBrand, resolveBg } from './state.js';
 import { esc, inlineMd, scaleSlide } from './utils.js';
 import { parseYAML, validate } from './parser.js';
 
@@ -16,7 +16,7 @@ export function renderSlide(slide, index, total) {
 
   const type = slide.type || 'bullets';
   el.className = `slide slide-type-${type}`;
-  applyTheme(el, state.currentTheme);
+  applyTheme(el, state.currentTheme, state.meta.brand);
 
   switch (type) {
     case 'title': {
@@ -162,6 +162,11 @@ export function renderSlide(slide, index, total) {
   const bg = resolveBg(slide.background);
   if (bg) el.style.background = bg;
 
+  // Background pattern: per-slide wins over the deck's; `pattern: none` opts a
+  // slide out. Applied after the background so it layers over either source.
+  const pat = slide.pattern !== undefined ? slide.pattern : state.meta.pattern;
+  if (pat && pat !== 'none') applyPattern(el, pat);
+
   el.appendChild(num);
 
   // Watermark logo on every non-title slide
@@ -232,7 +237,7 @@ export function updateWarnings(ws) {
 export function renderFilmstrip() {
   const strip = document.getElementById('filmstrip');
   strip.innerHTML = '';
-  const t = THEMES[state.currentTheme] || THEMES.neorgon;
+  const t = themeWithBrand(state.currentTheme, state.meta.brand);
   state.slides.forEach((slide, i) => {
     const type  = slide.type || 'bullets';
     const label = slide.heading || slide.text || slide.action || '';
@@ -251,7 +256,7 @@ export function renderFilmstrip() {
 
 export function syncFilmstrip() {
   const thumbs = document.querySelectorAll('.film-thumb');
-  const t = THEMES[state.currentTheme] || THEMES.neorgon;
+  const t = themeWithBrand(state.currentTheme, state.meta.brand);
   thumbs.forEach((el, i) => {
     const isActive = i === state.current;
     el.classList.toggle('active', isActive);

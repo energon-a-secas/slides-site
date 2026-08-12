@@ -3,6 +3,7 @@
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { state, THEMES } from './state.js';
+import { showToast } from './utils.js';
 import { showSlide, updateCounter, syncFilmstrip, renderFilmstrip, update } from './render.js';
 import { openFullscreen, closeFullscreen, fsPrev, fsNext,
          openGrid, closeGrid,
@@ -84,6 +85,44 @@ export function insertSlide(type) {
   ta.focus();
   document.getElementById('insert-menu').classList.remove('open');
   update();
+}
+
+/* ── Logo from a local file ───────────────────────────────────────────── */
+/* The hosted player cannot read the visitor's disk through a YAML path, so a
+   local logo is embedded as a data: URI written into the YAML itself — the
+   deck stays a single self-contained file that renders anywhere. URLs still
+   work by typing `logo:` directly. */
+
+export function pickLogo() {
+  document.getElementById('logo-file-input').click();
+}
+
+export function onLogoFile(e) {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  if (file.size > 500 * 1024) {
+    showToast('Logo is over 500 KB — resize it first; it gets embedded into the YAML');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const ta = document.getElementById('yaml-input');
+    let v = ta.value;
+    if (!/^\s*presentation:/m.test(v)) {
+      showToast('Load or start a deck first');
+      return;
+    }
+    const line = `  logo: "${reader.result}"`;
+    const existing = /^ {2}logo:[^\n]*$/m;
+    v = existing.test(v)
+      ? v.replace(existing, line)
+      : v.replace(/^( {2}title:[^\n]*)$/m, `$1\n${line}`);
+    ta.value = v;
+    update();
+    showToast(`Logo embedded (${Math.round(file.size / 1024)} KB) — add logo_all: true for a watermark on every slide`);
+  };
+  reader.readAsDataURL(file);
 }
 
 /* ── Sample deck ──────────────────────────────────────────────────────── */
@@ -191,6 +230,8 @@ export function loadSample() {
 export function initEvents() {
   const yamlInput = document.getElementById('yaml-input');
 
+  document.getElementById('logo-file-input').addEventListener('change', onLogoFile);
+
   // Tab / Shift+Tab → indent / dedent for YAML
   yamlInput.addEventListener('keydown', (e) => {
     if (e.key !== 'Tab') return;
@@ -289,6 +330,7 @@ export function exposeGlobals() {
   window.removeGalleryEntry = removeGalleryEntry;
   window.exportGalleryIndex = exportGalleryIndex;
   window.loadSample      = loadSample;
+  window.pickLogo        = pickLogo;
   window.runAudit        = runAudit;
   window.openGrid        = openGrid;
   window.openPresenter   = openPresenter;

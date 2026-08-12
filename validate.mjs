@@ -1,34 +1,45 @@
 #!/usr/bin/env node
-// Validate a slides-site deck without opening the player.
+// Validate slides-site decks without opening the player.
 //
 // This is a thin CLI over the player's own js/parser.js — parseYAML() and
 // validate() — so the density rules cannot fork: the player and this script
-// disagree with each other only if one of them is outdated, never by design.
+// disagree with each other only if one of them is outdated, which is exactly
+// what --fresh checks.
 //
 // Usage:
-//   node validate.mjs deck.yaml          # in a checkout: npm i js-yaml first
+//   node validate.mjs deck.yaml          # one deck (in a checkout: npm i js-yaml first)
 //   node validate.mjs -                  # read the deck from stdin
+//   node validate.mjs <dir>              # every deck in a repository (YAML with a presentation: root)
+//   node validate.mjs --fresh [target]   # is this copy of the rules current with the live site?
 //
 // From any other repo, the published copy works standalone:
 //   curl -sO https://slides.neorgon.com/validate.mjs && node validate.mjs deck.yaml
 // When js/parser.js is not next to this file it is fetched from the live site,
 // and js-yaml (the same 4.1.0 the player loads) is fetched when not installed.
 //
-// Exit codes: 0 clean or info-only · 1 density warnings · 2 unreadable deck.
+// Exit codes: 0 clean or info-only · 1 density warnings (or stale in --fresh) · 2 unreadable.
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { join, dirname } from 'node:path';
+import { join, dirname, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const SITE = 'https://slides.neorgon.com';
 const JSYAML_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js';
+// The files that carry rules and features (themes, patterns, brand keys). A
+// checkout whose copies differ from the live site validates against different
+// rules than the player people actually present in.
+const RULE_FILES = ['js/parser.js', 'js/state.js', 'CLAUDE.md', 'template.yaml'];
 const here = dirname(fileURLToPath(import.meta.url));
 
-const arg = process.argv[2];
-if (!arg) {
-  console.error('usage: node validate.mjs <deck.yaml | ->');
+const args = process.argv.slice(2);
+const fresh = args.includes('--fresh');
+const target = args.filter((a) => a !== '--fresh')[0];
+
+if (!fresh && !target) {
+  console.error('usage: node validate.mjs <deck.yaml | dir | -> | --fresh [checkout-dir]');
   process.exit(2);
 }
 
@@ -36,6 +47,36 @@ async function fetchText(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url} -> HTTP ${res.status}`);
   return res.text();
+}
+
+// ── --fresh: compare this checkout's rule files against the live site ───────
+if (fresh) {
+  const root = target || here;
+  if (!existsSync(join(root, 'js', 'parser.js'))) {
+    console.log(`no local checkout at ${root} — nothing to be stale: standalone runs fetch the live rules`);
+    process.exit(0);
+  }
+  const sha = (s) => createHash('sha256').update(s.replace(/\r\n/g, '\n')).digest('hex').slice(0, 12);
+  let differs = 0;
+  for (const f of RULE_FILES) {
+    const local = join(root, f);
+    if (!existsSync(local)) {
+      console.log(`STALE  ${f.padEnd(15)} missing locally`);
+      differs += 1;
+      continue;
+    }
+    const live = await fetchText(`${SITE}/${f}`);
+    const same = sha(readFileSync(local, 'utf8')) === sha(live);
+    console.log(`${same ? 'ok   ' : 'DIFFERS'}  ${f}`);
+    if (!same) differs += 1;
+  }
+  if (differs) {
+    console.log(`\n${differs} file(s) differ from ${SITE} — this checkout validates against different`);
+    console.log('rules (themes, patterns, density) than the live player. Pull if behind; push if ahead.');
+    process.exit(1);
+  }
+  console.log(`\ncurrent with ${SITE} — themes, patterns, and density rules all match`);
+  process.exit(0);
 }
 
 // ── js-yaml: local install first, the player's pinned CDN build second ──────
@@ -73,23 +114,60 @@ try {
   parser = await import(pathToFileURL(join(cache, 'parser.js')).href);
 }
 
-// ── run ─────────────────────────────────────────────────────────────────────
-const text = arg === '-' ? readFileSync(0, 'utf8') : readFileSync(arg, 'utf8');
-const doc = parser.parseYAML(text);
-if (doc.error) {
-  console.error(`unreadable deck: ${doc.error}`);
-  process.exit(2);
-}
-
-const findings = parser.validate(doc.slides, doc.meta);
+// ── single-deck validation ──────────────────────────────────────────────────
 const tag = { warn: 'WARN', info: 'info' };
-for (const f of findings) {
-  const where = f.slide ? `slide ${f.slide}` : 'deck';
-  console.log(`${tag[f.level] || f.level}  ${where.padEnd(9)} ${f.msg}`);
+
+function checkDeck(text, label) {
+  const doc = parser.parseYAML(text);
+  if (doc.error) {
+    console.log(`${label}: unreadable deck — ${doc.error}`);
+    return { unreadable: true, warns: 0 };
+  }
+  const findings = parser.validate(doc.slides, doc.meta);
+  for (const f of findings) {
+    const where = f.slide ? `slide ${f.slide}` : 'deck';
+    console.log(`${tag[f.level] || f.level}  ${where.padEnd(9)} ${f.msg}`);
+  }
+  const warns = findings.filter((f) => f.level === 'warn').length;
+  console.log(`${label}: ${doc.slides.length} slides — ${warns} warning(s), ${findings.length - warns} note(s)`);
+  return { unreadable: false, warns };
 }
 
-const warns = findings.filter((f) => f.level === 'warn').length;
-console.log(
-  `\n${doc.slides.length} slides — ${warns} warning(s), ${findings.length - warns} note(s)`
-);
-process.exit(warns > 0 ? 1 : 0);
+// ── run: stdin, one file, or every deck under a directory ───────────────────
+if (target === '-' || !statSync(target).isDirectory()) {
+  const text = target === '-' ? readFileSync(0, 'utf8') : readFileSync(target, 'utf8');
+  const r = checkDeck(text, target === '-' ? 'stdin' : target);
+  process.exit(r.unreadable ? 2 : r.warns > 0 ? 1 : 0);
+}
+
+// Directory mode: a deck is any YAML whose root is `presentation:`. Other YAML
+// (CI configs, SAM templates) is not this validator's business and is skipped.
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'vendor', '.venv', '__pycache__']);
+const decks = [];
+(function walk(dir) {
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) {
+      if (!SKIP_DIRS.has(name)) walk(p);
+    } else if (/\.ya?ml$/.test(name)) {
+      const text = readFileSync(p, 'utf8');
+      if (/^presentation:\s*$/m.test(text) || /^presentation:\s/m.test(text)) decks.push([p, text]);
+    }
+  }
+})(target);
+
+if (!decks.length) {
+  console.log(`no decks under ${target} (a deck is YAML with a presentation: root)`);
+  process.exit(0);
+}
+
+let totalWarns = 0;
+let unreadable = 0;
+for (const [p, text] of decks) {
+  console.log(`\n── ${relative(target, p)}`);
+  const r = checkDeck(text, relative(target, p));
+  totalWarns += r.warns;
+  unreadable += r.unreadable ? 1 : 0;
+}
+console.log(`\n${decks.length} deck(s) — ${totalWarns} warning(s), ${unreadable} unreadable`);
+process.exit(unreadable ? 2 : totalWarns > 0 ? 1 : 0);

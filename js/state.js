@@ -96,10 +96,76 @@ export function resolveBg(value) {
   return BG_PRESETS[value] || value;
 }
 
-/** Apply a theme's CSS custom properties to a slide element */
-export function applyTheme(el, name) {
+/* Background patterns — subtle texture layered over any theme or bg preset.
+   Every layer draws with var(--sl-pattern-ink), which applyTheme derives from
+   the background's luminance, so the same pattern name works on dark and light
+   themes alike. sizes maps per layer; composing code appends the underlying
+   gradient's own size. */
+export const PATTERNS = {
+  dots: {
+    layers: ['radial-gradient(circle, var(--sl-pattern-ink) 1px, transparent 1.6px)'],
+    sizes:  ['22px 22px'],
+  },
+  grid: {
+    layers: [
+      'linear-gradient(var(--sl-pattern-ink) 1px, transparent 1px)',
+      'linear-gradient(90deg, var(--sl-pattern-ink) 1px, transparent 1px)',
+    ],
+    sizes: ['44px 44px', '44px 44px'],
+  },
+  diagonal: {
+    layers: ['repeating-linear-gradient(45deg, var(--sl-pattern-ink) 0 1px, transparent 1px 16px)'],
+    sizes:  ['auto'],
+  },
+  rings: {
+    layers: ['repeating-radial-gradient(circle at 85% 12%, var(--sl-pattern-ink) 0 1px, transparent 1px 46px)'],
+    sizes:  ['auto'],
+  },
+};
+
+/* Deck-declared brand colors. Only these keys may override the theme — the
+   theme list stays color-named and shared (names are colors, never brands);
+   a brand's identity travels inside the deck's own YAML instead. */
+const BRAND_KEYS = { accent: 'accent', bg: 'bg', text: 'text', on_accent: 'onAccent' };
+
+/** The resolved theme with the deck's brand overrides merged over it. */
+export function themeWithBrand(name, brand) {
   const t = THEMES[name] || THEMES.neorgon;
+  if (!brand || typeof brand !== 'object') return t;
+  const merged = { ...t };
+  for (const [yamlKey, themeKey] of Object.entries(BRAND_KEYS)) {
+    if (typeof brand[yamlKey] === 'string' && brand[yamlKey]) merged[themeKey] = brand[yamlKey];
+  }
+  return merged;
+}
+
+/* Pattern ink from background luminance: dark backgrounds get faint white,
+   light ones faint slate. Non-hex backgrounds fall back to faint white. */
+function patternInk(bg) {
+  const m = /^#([0-9a-f]{6})$/i.exec(bg || '');
+  if (m) {
+    const n = parseInt(m[1], 16);
+    const lum = (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
+    if (lum > 0.6) return 'rgba(15,23,42,.06)';
+  }
+  return 'rgba(255,255,255,.055)';
+}
+
+/** Layer a background pattern over whatever background the element already has. */
+export function applyPattern(el, name) {
+  const p = PATTERNS[name];
+  if (!p) return;
+  const existing = el.style.backgroundImage;
+  const under = existing && existing !== 'none' ? [existing] : [];
+  el.style.backgroundImage = [...p.layers, ...under].join(', ');
+  el.style.backgroundSize = [...p.sizes, ...under.map(() => 'auto')].join(', ');
+}
+
+/** Apply a theme's CSS custom properties to a slide element */
+export function applyTheme(el, name, brand) {
+  const t = themeWithBrand(name, brand);
   el.style.background = t.bg;
+  el.style.setProperty('--sl-pattern-ink', patternInk(t.bg));
   el.style.setProperty('--sl-on-accent', t.onAccent || '#fff');
   el.style.setProperty('--sl-accent',    t.accent);
   el.style.setProperty('--sl-text',      t.text);

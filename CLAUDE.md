@@ -26,6 +26,12 @@ presentation:
   author: "..."           # optional
   date: "YYYY-MM"         # optional
   theme: "royal"          # optional deck-wide look — see "Deck themes" below
+  pattern: "dots"         # optional background texture: dots, grid, diagonal, rings — see "Patterns"
+  logo: "https://…"       # optional: URL, data: URI (player's ◉ Logo button embeds a local file), or self-hosted path
+  logo_all: true          # optional: watermark the logo on every non-title slide
+  brand:                  # optional brand colors, override the theme — see "Brand colors"
+    accent: "#e50914"
+    # bg: "#0b0b0f"       # text: / on_accent: also accepted; nothing else is
 
   slides:
     - type: title
@@ -142,6 +148,47 @@ YAML, so pick the palette that matches the room, not the customer. Canonical def
 `THEMES` in `js/state.js` (key order there = dropdown order). All export paths follow the
 active theme: PPTX derives its colors from it, standalone HTML and Reveal render with it, and
 Marp front-matter carries its background/text colors.
+
+### Brand colors
+
+The place brand identity *does* belong is the deck's own YAML — it travels with the deck
+instead of polluting the shared theme list. `presentation.brand:` overrides the active theme's
+colors, whatever theme the viewer picks, so every deck for the same brand stays consistent:
+
+```yaml
+  brand:
+    accent: "#e50914"     # bar, pills, timeline dots, stat values
+    bg: "#0b0b0f"         # slide background (optional)
+    text: "#f5f5f1"       # main text (optional)
+    on_accent: "#ffffff"  # text sitting on the accent color (optional)
+```
+
+Only those four keys are accepted; anything else warns in the audit and is ignored. Brand
+colors carry into PPTX/HTML/Reveal exports the same way the theme does. Pick `bg`/`text`
+pairs with real contrast — the audit checks key names, not your color taste.
+
+### Logo
+
+`logo:` accepts three forms: a **full URL** (`https://…`), a **`data:` URI** — the toolbar's
+**◉ Logo** button embeds a local image file as one, keeping the deck a single self-contained
+file — or a **relative path**, which only resolves when the deck is self-hosted beside the
+image (the audit flags this case). `logo_all: true` watermarks it on every non-title slide.
+
+### Patterns
+
+`presentation.pattern:` lays a subtle texture over the theme background on every slide; a
+per-slide `pattern:` overrides it, and `pattern: none` opts one slide out. The ink color is
+derived from the background's luminance, so every pattern works on dark and light themes.
+
+| Pattern | Texture |
+|---|---|
+| `dots` | Fine dot grid |
+| `grid` | Thin ruled grid |
+| `diagonal` | 45° hairlines |
+| `rings` | Concentric rings from the top-right corner |
+
+Patterns render in the player and the DOM-derived exports (standalone HTML, Reveal); PPTX
+and Marp get flat theme/brand colors — say so if someone asks why the PPTX looks plainer.
 
 ---
 

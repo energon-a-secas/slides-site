@@ -10,7 +10,7 @@
 
 - [Deck schema](https://slides.neorgon.com/CLAUDE.md): Every slide type, the density rules, and the flow audit checklist
 - [Worked example](https://slides.neorgon.com/template.yaml): A complete deck that validates clean — start from this
-- [Deck validator](https://slides.neorgon.com/validate.mjs): Density checks without the player: node validate.mjs deck.yaml (standalone — fetches the player's own rules when run outside a checkout)
+- [Deck validator](https://slides.neorgon.com/validate.mjs): Density checks without the player: node validate.mjs <deck.yaml | dir> validates one deck or every deck in a repo; --fresh checks a checkout still matches the live rules (standalone — fetches the player's own rules when run outside a checkout)
 
 ## More Neorgon tools
 

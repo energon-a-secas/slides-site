@@ -2,7 +2,7 @@
    YAML parsing + slide validation (coaching)
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { THEMES } from './state.js';
+import { THEMES, PATTERNS } from './state.js';
 
 /** Parse raw YAML text into { meta, slides } or { error } */
 export function parseYAML(text) {
@@ -21,6 +21,8 @@ export function parseYAML(text) {
         theme:    p.theme    || '',
         logo:     p.logo     || '',
         logo_all: !!p.logo_all,
+        brand:    p.brand    || null,
+        pattern:  p.pattern  || '',
       },
       slides: p.slides || [],
     };
@@ -75,11 +77,37 @@ export function validate(slides, meta) {
       if (max > 4)
         add('warn', n, `Split slide: ${max} items per column. Keep each column to 4 or fewer.`);
     }
+
+    if (slide.pattern !== undefined && slide.pattern !== 'none' && !PATTERNS[slide.pattern])
+      add('warn', n, `Unknown pattern "${slide.pattern}" — ignored. Available: ${Object.keys(PATTERNS).join(', ')}, none.`);
   });
 
   // Deck-level checks
   if (meta?.theme && !THEMES[meta.theme])
     add('warn', null, `Unknown theme "${meta.theme}" — falling back to the current one. Available: ${Object.keys(THEMES).join(', ')}.`);
+
+  if (meta?.pattern && meta.pattern !== 'none' && !PATTERNS[meta.pattern])
+    add('warn', null, `Unknown pattern "${meta.pattern}" — ignored. Available: ${Object.keys(PATTERNS).join(', ')}, none.`);
+
+  if (meta?.brand) {
+    const allowed = ['accent', 'bg', 'text', 'on_accent'];
+    if (typeof meta.brand !== 'object' || Array.isArray(meta.brand)) {
+      add('warn', null, `brand: must be a map of color overrides (${allowed.join(', ')}).`);
+    } else {
+      for (const k of Object.keys(meta.brand)) {
+        if (!allowed.includes(k))
+          add('warn', null, `brand.${k} is not a brand key — ignored. Allowed: ${allowed.join(', ')}.`);
+        else if (typeof meta.brand[k] !== 'string' || !meta.brand[k])
+          add('warn', null, `brand.${k} must be a CSS color string.`);
+      }
+    }
+  }
+
+  if (meta?.logo && !/^(data:|https?:\/\/|\.?\/)/.test(meta.logo))
+    add('info', null,
+      `logo "${meta.logo}" is a bare relative path — it resolves against wherever the player is served, ` +
+      'not against the YAML file. Use a full URL, a data: URI (the player’s Logo button embeds a local file), ' +
+      'or self-host the deck beside the image.');
 
   if (slides.length > 0 && slides[0].type !== 'title')
     add('info', 1, 'First slide is not a title. Consider adding one for context.');

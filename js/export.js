@@ -2,7 +2,7 @@
    Export functions — YAML, Marp Markdown, standalone HTML, PPTX
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { state, THEMES, resolveBg } from './state.js';
+import { state, THEMES, themeWithBrand, resolveBg } from './state.js';
 import { esc, slug, download, showToast } from './utils.js';
 import { renderSlide } from './render.js';
 
@@ -20,7 +20,7 @@ export function exportYAML() {
 export function exportMarp() {
   if (!state.slides.length) { showToast('Load a presentation first'); return; }
   const { meta, slides } = state;
-  const t = THEMES[state.currentTheme] || THEMES.neorgon;
+  const t = themeWithBrand(state.currentTheme, state.meta.brand);
   const lines = [
     '---', 'marp: true', 'theme: default', 'paginate: true',
     `backgroundColor: "${t.bg}"`, `color: "${t.text}"`,
@@ -172,7 +172,7 @@ export function exportPPTX() {
   const pptx = new PptxGenJS();
   pptx.layout = 'LAYOUT_WIDE';
 
-  const t = THEMES[state.currentTheme] || THEMES.neorgon;
+  const t = themeWithBrand(state.currentTheme, state.meta.brand);
   const hex = (css) => {
     const s = String(css || '');
     if (s.startsWith('#')) return s.slice(1, 7);

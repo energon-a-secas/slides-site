@@ -2,7 +2,7 @@
    Publish — Reveal.js export, ZIP bundle, gallery manager
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { state, THEMES, resolveBg } from './state.js';
+import { state, THEMES, themeWithBrand, resolveBg } from './state.js';
 import { esc, slug, download, showToast } from './utils.js';
 
 const GALLERY_KEY = 'pres-sage-gallery';
@@ -10,7 +10,7 @@ const GALLERY_KEY = 'pres-sage-gallery';
 /* ── Reveal.js HTML generation ───────────────────────────────────────── */
 
 function buildRevealHTML(meta, slides, themeName) {
-  const t = THEMES[themeName] || THEMES.neorgon;
+  const t = themeWithBrand(themeName, meta?.brand);
 
   const slideSections = slides.map(slide => {
     const type = slide.type || 'bullets';

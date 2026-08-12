@@ -95,6 +95,9 @@
     <button class="btn btn-sm btn-ghost" onclick="openGallery()" title="Manage published presentations gallery">Gallery</button>
     <div class="sep"></div>
     <button class="btn btn-sm btn-ghost" onclick="loadSample()" title="Load example deck">⊕ Sample</button>
+    <button class="btn btn-sm btn-ghost" onclick="pickLogo()" title="Embed a local image as the deck logo (data URI, self-contained) — or type logo: with a URL">◉ Logo</button>
+    <input type="file" id="logo-file-input" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none">
+
     <button class="btn btn-sm btn-ghost" data-action="runAudit" onclick="runAudit()" title="Full-deck flow audit + AI coach">🔍 Audit / Coach</button>
     <button class="btn btn-sm btn-ghost" onclick="openGrid()" title="Grid overview, all slides at a glance (G)">⊞ Overview</button>
     <button class="btn btn-sm btn-ghost" onclick="openPresenter()" title="Present fullscreen with notes + timer (F)">⛶ Present</button>
