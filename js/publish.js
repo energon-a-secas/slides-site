@@ -2,7 +2,7 @@
    Publish — Reveal.js export, ZIP bundle, gallery manager
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { state, THEMES, themeWithBrand, resolveBg } from './state.js';
+import { state, themeWithBrand, resolveBg } from './state.js';
 import { esc, slug, download, showToast } from './utils.js';
 
 const GALLERY_KEY = 'pres-sage-gallery';

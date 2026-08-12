@@ -2,7 +2,7 @@
    Export functions — YAML, Marp Markdown, standalone HTML, PPTX
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { state, THEMES, themeWithBrand, resolveBg } from './state.js';
+import { state, themeWithBrand, resolveBg } from './state.js';
 import { esc, slug, download, showToast } from './utils.js';
 import { renderSlide } from './render.js';
 
