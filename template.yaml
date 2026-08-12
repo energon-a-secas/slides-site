@@ -10,7 +10,9 @@ presentation:
   date: "YYYY-MM"
   # theme: royal          # optional deck-wide look — full list in CLAUDE.md (Deck themes)
   # pattern: dots         # optional background texture: dots, grid, diagonal, rings, orbs
-  # logo: "https://…"     # URL or data: URI (toolbar ◉ Logo embeds a local file); logo_all: true watermarks every slide
+  # logo: "https://…"     # URL, data: URI (toolbar ◉ Logo embeds a local file), or "placeholder" for drafts
+  # logo_all: true        # stamp it on every non-title slide · logo_pos: bottom-left picks the corner
+  # logo_size: 96         # bigger logo on the title slide only (px height, 16–240)
   # brand:                # brand colors override the theme — decks for one brand stay consistent
   #   accent: "#e50914"
 

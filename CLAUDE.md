@@ -27,8 +27,10 @@ presentation:
   date: "YYYY-MM"         # optional
   theme: "royal"          # optional deck-wide look — see "Deck themes" below
   pattern: "dots"         # optional background texture: dots, grid, diagonal, rings, orbs — see "Patterns"
-  logo: "https://…"       # optional: URL, data: URI (player's ◉ Logo button embeds a local file), or self-hosted path
-  logo_all: true          # optional: watermark the logo on every non-title slide
+  logo: "https://…"       # optional: URL, data: URI (player's ◉ Logo button embeds a local file), self-hosted path, or "placeholder"
+  logo_all: true          # optional: stamp the logo on every non-title slide
+  logo_pos: "bottom-left" # optional stamp corner: top-left, top-right (default), bottom-left, bottom-right
+  logo_size: 96           # optional px height of the title-slide logo (16–240; default 52)
   brand:                  # optional brand colors, override the theme — see "Brand colors"
     accent: "#e50914"
     # bg: "#0b0b0f"       # text: / on_accent: also accepted; nothing else is
@@ -169,10 +171,18 @@ pairs with real contrast — the audit checks key names, not your color taste.
 
 ### Logo
 
-`logo:` accepts three forms: a **full URL** (`https://…`), a **`data:` URI** — the toolbar's
+`logo:` accepts four forms: a **full URL** (`https://…`), a **`data:` URI** — the toolbar's
 **◉ Logo** button embeds a local image file as one, keeping the deck a single self-contained
-file — or a **relative path**, which only resolves when the deck is self-hosted beside the
-image (the audit flags this case). `logo_all: true` watermarks it on every non-title slide.
+file — a **relative path**, which only resolves when the deck is self-hosted beside the image
+(the audit flags this case), or **`placeholder`**, a generated monogram (the title's first
+letter on the accent color) for drafts written before brand assets exist.
+
+Placement and size: `logo_all: true` stamps the logo on every non-title slide, subtle and
+persistent; `logo_pos:` picks its corner (`bottom-left` for the classic stamp; `top-right` is
+the default, and `bottom-right` sits above the slide number, which owns that corner).
+`logo_size:` sets the **title-slide** logo height in px (16–240, default 52) for decks where
+the brand should lead the first screen — it never affects the stamp, which stays small on
+purpose.
 
 ### Patterns
 

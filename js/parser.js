@@ -21,6 +21,8 @@ export function parseYAML(text) {
         theme:    p.theme    || '',
         logo:     p.logo     || '',
         logo_all: !!p.logo_all,
+        logo_pos: p.logo_pos || '',
+        logo_size: p.logo_size || 0,
         brand:    p.brand    || null,
         pattern:  p.pattern  || '',
       },
@@ -103,7 +105,13 @@ export function validate(slides, meta) {
     }
   }
 
-  if (meta?.logo && !/^(data:|https?:\/\/|\.?\/)/.test(meta.logo))
+  if (meta?.logo_pos && !['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(meta.logo_pos))
+    add('warn', null, `Unknown logo_pos "${meta.logo_pos}" — using the default (top-right). Corners: top-left, top-right, bottom-left, bottom-right.`);
+
+  if (meta?.logo_size && (typeof meta.logo_size !== 'number' || meta.logo_size < 16 || meta.logo_size > 240))
+    add('warn', null, `logo_size ${JSON.stringify(meta.logo_size)} — expected a pixel height between 16 and 240; using the default.`);
+
+  if (meta?.logo && meta.logo !== 'placeholder' && !/^(data:|https?:\/\/|\.?\/)/.test(meta.logo))
     add('info', null,
       `logo "${meta.logo}" is a bare relative path — it resolves against wherever the player is served, ` +
       'not against the YAML file. Use a full URL, a data: URI (the player’s Logo button embeds a local file), ' +

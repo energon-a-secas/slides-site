@@ -6,6 +6,31 @@ import { state, THEMES, applyTheme, applyPattern, themeWithBrand, resolveBg } fr
 import { esc, inlineMd, scaleSlide } from './utils.js';
 import { parseYAML, validate } from './parser.js';
 
+/* ── Logo helpers ─────────────────────────────────────────────────────── */
+
+/* `logo: placeholder` renders a generated monogram — the deck title's first
+   letter on the accent color — so a draft deck has something in the logo slot
+   before brand assets exist. Swapping in the real file later is one line. */
+function resolveLogo(meta) {
+  if (meta.logo !== 'placeholder') return meta.logo;
+  const t = themeWithBrand(state.currentTheme, meta.brand);
+  const letter = (meta.title || 'N').trim().charAt(0).toUpperCase();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96">` +
+    `<circle cx="48" cy="48" r="44" fill="${t.accent}"/>` +
+    `<text x="48" y="63" font-size="44" text-anchor="middle" fill="${t.onAccent || '#fff'}" ` +
+    `font-family="Avenir Next, -apple-system, sans-serif" font-weight="600">${letter}</text></svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+
+/* Where the per-slide stamp sits. bottom-right lifts above the slide number,
+   which owns that corner. Default (no logo_pos) keeps the CSS top-right. */
+const LOGO_POS = {
+  'top-left':     { top: '16px',  left: '18px',  right: 'auto', bottom: 'auto' },
+  'top-right':    { top: '16px',  right: '18px', left: 'auto',  bottom: 'auto' },
+  'bottom-left':  { bottom: '14px', left: '18px', top: 'auto',  right: 'auto' },
+  'bottom-right': { bottom: '32px', right: '18px', top: 'auto', left: 'auto' },
+};
+
 /* ── Slide renderer → HTMLElement ─────────────────────────────────────── */
 
 export function renderSlide(slide, index, total) {
@@ -20,8 +45,12 @@ export function renderSlide(slide, index, total) {
 
   switch (type) {
     case 'title': {
+      const size = state.meta.logo_size;
+      const sizeStyle = typeof size === 'number' && size >= 16 && size <= 240
+        ? ` style="max-height:${size}px;max-width:${Math.round(size * 2.7)}px"`
+        : '';
       const logoHtml = state.meta.logo
-        ? `<img class="title-logo" src="${esc(state.meta.logo)}" alt="logo">`
+        ? `<img class="title-logo" src="${esc(resolveLogo(state.meta))}" alt="logo"${sizeStyle}>`
         : '';
       el.innerHTML = `
         ${logoHtml}
@@ -169,12 +198,14 @@ export function renderSlide(slide, index, total) {
 
   el.appendChild(num);
 
-  // Watermark logo on every non-title slide
+  // Watermark logo on every non-title slide; logo_pos picks its corner
   if (state.meta.logo && state.meta.logo_all && type !== 'title') {
     const wm = document.createElement('img');
     wm.className = 'slide-logo-watermark';
-    wm.src = state.meta.logo;
+    wm.src = resolveLogo(state.meta);
     wm.alt = '';
+    const pos = LOGO_POS[state.meta.logo_pos];
+    if (pos) Object.assign(wm.style, pos);
     el.appendChild(wm);
   }
 
