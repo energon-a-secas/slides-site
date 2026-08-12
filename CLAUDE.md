@@ -155,6 +155,18 @@ Marp front-matter carries its background/text colors.
 | Columns per split slide | **2 max** | 3 columns = unreadable |
 | Ideas per slide | **1** | If you have two ideas, make two slides |
 
+These rules are mechanically checkable without opening the player:
+
+```bash
+node validate.mjs deck.yaml    # exit 0 clean · 1 warnings with slide numbers · 2 unreadable
+```
+
+`validate.mjs` is a thin CLI over the player's own `js/parser.js`, so it cannot disagree with
+the audit bar. It is published at `https://slides.neorgon.com/validate.mjs` and runs standalone
+from any repo (it fetches the player's rules when no checkout is beside it) — validate before a
+human opens the deck. It checks density, not geometry: a passing deck can still overflow a
+slide, so the player click-through remains the final check.
+
 ---
 
 ## Per-slide coaching checklist
