@@ -1,0 +1,330 @@
+presentation:
+  title: "Play, moderation, and a site that keeps your place"
+  subtitle: "The launch batch — what was wrong, what shipped, what it cost"
+  date: "2026-08"
+
+  slides:
+    - type: title
+      heading: "Play, moderation, and a site that keeps your place"
+      subtitle: "Four themes from the launch-prep rounds"
+
+    - type: bullets
+      heading: "Every round trip lost your place"
+      bullets:
+        - "Open a product, go back — list reset to page one"
+        - "No brand filter across 11.6k products"
+        - "'Discovery' never dealt anything new"
+        - "Logged-out mobile nav shrank to 0.6rem"
+        - "A risky product was either public or nothing"
+      note: >
+        Scope: everything shipped since the analytics dashboard deck (2026-08-09):
+        the mobile pass, play mode rounds 1 and 2, the moderation system, and the
+        sleep-time navigation batch. Product count is ~11.6k per
+        docs/ai-process-backlog.md (count:products is .take(2000)-capped). All of
+        it is on feature/insights-mobile-play-polish, uncommitted, deployed to the
+        live backend admired-husky-748 via npx convex dev --once.
+
+    - type: bullets
+      heading: "Last deck's open items, one day later"
+      bullets:
+        - "Bing connector: written, in the nightly chain"
+        - "First unattended run: GSC ok at 02:40 UTC"
+        - "Rollup for 08-09: 192 events; gap scores followed"
+        - "Connectors panel mislabel: still open"
+      note: >
+        The previous deck ended with "the nightly chain has never run with the
+        connector in it" and "Bing is the next connector". Both closed: Bing was
+        added 08-09, and the 08-10 02:40 UTC cron run was verified unattended
+        (status ok, 2 rows — real but thin for a young site). The 08-10 partial
+        rollup (175 events) included the first interaction and collection_add
+        rows ever — those event names were allowlisted for months but nothing
+        emitted them until the play round-2 work below. The panel mislabel
+        (provisioned sources read "not provisioned") is reported, not fixed.
+
+    - type: divider
+      heading: "The site fits a phone now"
+      subtitle: "Navigation, modals, breakpoints"
+
+    - type: split
+      heading: "The hamburger existed — gated behind login"
+      left:
+        heading: "What it looked like"
+        bullets:
+          - "Logged out: four inline links"
+          - "Shrinking to 0.6rem below 359px"
+      right:
+        heading: "What it was"
+        bullets:
+          - "CSS gated on a class JS adds"
+          - "…only when state.user is set"
+          - "Dropdown and Escape already built"
+      note: >
+        css/layout.css:262-279 revealed the toggle only under
+        .header-actions--has-menu, which render.js:~660 added only for logged-in
+        users. The fix deleted the qualifier, moved admin/logout into the dropdown
+        (mobile hides the header buttons), wired the dead .header-nav-link.active
+        plus aria-current/aria-expanded/aria-controls, and deleted the 0.6rem rule
+        — it existed only to survive this bug. Verified at 375 and 1440, logged
+        out and as admin.
+
+    - type: split
+      heading: "The worst component on the site: the products toolbar"
+      left:
+        heading: "Before"
+        bullets:
+          - "9 controls, zero media queries"
+          - "~7 stacked rows at 375px"
+          - "641–700px: grid tight, padding wide"
+      right:
+        heading: "After"
+        bullets:
+          - "2-col grid inside the filters card"
+          - "'N active' badge when collapsed"
+          - "640/700 folded into 768 (28 uses)"
+      note: >
+        .products-controls had nine min-width flex children and no breakpoint
+        handling at all. Now it folds into the existing collapsible-filters
+        pattern; search stays outside the card because it's the first control
+        people reach for. The 641–700 band was a live bug — the products grid
+        tightened while .container padding was still 24px. Nine distinct
+        breakpoint values were in use; 640 and 700 are gone, 768 is the
+        convention. Also in this pass: back-button alignment and divider weight
+        in modals, auth/contact modals no longer full-height strips on phones,
+        safe-area insets for lightbox and close buttons.
+
+    - type: divider
+      heading: "Play: three games, then a second round"
+      subtitle: "Higher/lower, this-or-that, taste profile"
+
+    - type: bullets
+      heading: "Round 2 was the one that mattered"
+      bullets:
+        - "Every game card now acts: like, love, wishlist, save, view"
+        - "Save-for-later is a private auto-collection"
+        - "End screens show the session you just played"
+        - "History lives in localStorage — deliberately untracked"
+      note: >
+        Round 1 shipped the games; the user's feedback was that they showed dolls
+        you couldn't act on. Round 2 put five actions on every card, made
+        save-for-later an auto-created private collection (schema marker
+        system:"saved-for-later", rename-safe), and flipped collection creation to
+        private-by-default on the user's call. History is the localStorage
+        doll-play.lifetime.seen bucket (cap 200) — the user's words: "not tracked…
+        a hook to backtrack". View-from-game opens the product modal via
+        navigate("/product/:slug"), which doesn't hide the page, so the game
+        survives underneath.
+
+    - type: split
+      heading: "44 game events landed in a table nobody read"
+      left:
+        heading: "Symptom"
+        bullets:
+          - "Games emitted preference_reveal"
+          - "Material and price tables: empty"
+      right:
+        heading: "Cause"
+        bullets:
+          - "preferenceMatrix hardcoded filter_apply"
+          - "Unioned both metrics — then…"
+          - "…every column was exactly 2×"
+      note: >
+        analytics:preferenceMatrix read only metric:'filter_apply', so all 44
+        preference_reveal events were in dailyMetrics but out of the panel.
+        Unioning the metrics exposed the second bug: rollups.ts emits both a
+        country-less and a per-country row for the same (metric, attribute,
+        value), and this query's index has no country component — so it summed
+        both cuts and rendered the country-less row as a phantom '??' country
+        duplicating the whole table. play.ts and overview already filtered
+        correctly; preferenceMatrix was the only reader that didn't. Found by
+        rolling up real play data, not by reading code.
+
+    - type: bullets
+      heading: "The bugs only playing found"
+      bullets:
+        - "Scripted playthrough stalled at round 8 of 8"
+        - "busy released after paint — first click swallowed"
+        - "Prices rendered '810.00' — no currency in scraped strings"
+        - "Unpinned locale rendered the same doll as '$1503'"
+      note: >
+        Both games released their busy flag in a finally AFTER paint(), so the
+        first click on a just-rendered Next button was silently dropped; fixed by
+        releasing before the paint. Prices: the scraped price string carries no
+        currency mark and formats vary by store, so all three surfaces now build
+        from priceValue with a pinned en-US locale. All three games verified
+        in-browser at 1440 and 375px, 0 console errors. Same seed gives the same
+        pairs across browsers — the PRNG extraction was checked bit-identical
+        before any game shipped.
+
+    - type: divider
+      heading: "A moderation queue instead of public-or-nothing"
+      subtitle: "Three states, a dry run, and one exemption"
+
+    - type: bullets
+      heading: "Screened before anything went public"
+      bullets:
+        - "pending / cleared / confirmed — absence means public"
+        - "Dry run caught Olivia→loli, SH074→shota"
+        - "22 candidate hits tuned to 6 real, pre-write"
+        - "D+ exemption cleared 66 of 372 queued"
+        - "Company watch swept 388 products for review"
+      note: >
+        Name/keyword screen at every write path (insertProduct, publishRow
+        insert+refresh, backfillFlags, flagCompany) but never on user reports.
+        The dry run caught the Scunthorpe collisions — Olivia joining to 'loli'
+        across a word boundary, SH074 reading as 'shota' via 7→t leet — before
+        any row was written. The mature-cup exemption (structured cup field, else
+        title-derived) cleared 66/372 with zero name-screen flags among them.
+        Company watch (MLW Doll, SHE Doll, SheDoll) uses a new
+        companies.moderationWatch field — deliberately NOT censorship=NSFW+,
+        which would publicly hide even cleared items. Queue ended at 306 pending
+        / 85 cleared / 4 confirmed with the owner actively reviewing. Known gap:
+        re-deciding an already-decided product patches it but leaves no new
+        riskFlags audit row — noted, not fixed.
+
+    - type: divider
+      heading: "Finding products without losing your place"
+      subtitle: "The sleep-time batch"
+
+    - type: split
+      heading: "One modal body, two contents"
+      left:
+        heading: "Before"
+        bullets:
+          - "Product modal replaced company content"
+          - "Back = fresh modal, page one, top"
+      right:
+        heading: "After"
+        bullets:
+          - "Stash grid+cursor+scroll on the way in"
+          - "Consumed once, on companyId match"
+          - "Pager survives: 36 → 48 after restore"
+      note: >
+        js/events.js keeps a module-level companyProductsLive cursor and a
+        one-shot companyProductsStash (gridHtml, cursor, isDone, scrollTop) taken
+        in showProductModalBySlug and consumed in showCompanyModal. Verified in
+        the browser: 36 cards and scrollTop 1400 restored exactly, and the
+        load-more pager continued 36 → 48 from the live cursor.
+        refreshCompanyModal intentionally still fresh-loads.
+
+    - type: bullets
+      heading: "Chrome was restoring scroll too — to the wrong place"
+      bullets:
+        - "We restored 1600px; the page ended at 0"
+        - "Chrome's own restore was racing ours — animated"
+        - "scroll-behavior: smooth made the race visible"
+        - "scrollRestoration='manual' around modal transitions"
+      note: >
+        Measured sequence: modal open at 955 → back+400ms at 414 → back+1300ms
+        at 0. The animation was the tell: css/reset.css:41 sets scroll-behavior:
+        smooth, so Chrome's native restore didn't jump, it glided — straight to
+        the wrong offset. The fix arms history.scrollRestoration='manual' when a
+        card click opens a product, restores via requestAnimationFrame after the
+        cached render, and hands control back with 'auto'. Re-verified: 1600 →
+        1600 exactly, on /products and on the company-modal round trip.
+
+    - type: split
+      heading: "The daily pool was oldest-first"
+      left:
+        heading: "Before"
+        bullets:
+          - "getForDiscovery paginates in _id order"
+          - "Newest catalogue streams in last"
+          - "Never reaches an early pack"
+      right:
+        heading: "After"
+        bullets:
+          - "Bounded fresh pool: by_created desc, 300"
+          - "31-day products + 62-day brands"
+          - "2 of 5 cards per pack, seeded +4242"
+      note: >
+        convex/discovery.ts gained getFreshForDiscovery: newest 300 by the
+        by_created index filtered to a 31-day window, plus up to 8 products each
+        from brands whose _creationTime is within 62 days (companies has NO
+        createdAt field — CLAUDE.md was wrong and is corrected). Dealt 2-per-pack
+        with a seeded shuffle (todaySeed()+4242) so everyone gets the same daily
+        draw. Live measurement: 150 fresh cards from 30 brands; a Starpery from
+        this month was verified dealt into a pack. The hero copy now says so, and
+        the feature is renamed Daily Discovery everywhere.
+
+    - type: bullets
+      heading: "A brand filter that can't drift"
+      bullets:
+        - "Keys on companyId, never the brand string"
+        - "'Doll senior' vs 'Doll Senior' drift is real"
+        - "Vocabulary: companies with products, ~190 rows"
+        - "?brand= links seed it from any company modal"
+      note: >
+        products:search gained a companyId argument served by the by_company
+        index. brandVocabulary is a companies collect filtered productCount>0 —
+        never a products tally — and the select shows live counts. ?brand=<name>
+        resolves case-insensitively to the canonical id, so company modals
+        gained an "Open in product search →" link that lands on a filtered list.
+        The filter joins the 'N active' badge, the active-filter note, and the
+        analytics filter event.
+
+    - type: stats
+      background: ocean
+      heading: "Measured"
+      stats:
+        - value: "1600 → 1600"
+          label: "scroll restore, exact pixels"
+        - value: "150"
+          label: "fresh discovery cards live, 30 brands"
+        - value: "66 / 372"
+          label: "queue cleared by the cup exemption"
+        - value: "2×"
+          label: "every preference column, pre-fix"
+      note: >
+        Scroll: window.scrollY sampled after back-navigation, before and after
+        the scrollRestoration fix. Fresh pool: getFreshForDiscovery run against
+        the live backend, counted. Queue: moderation queue counts before/after
+        clearByMatureCup. 2×: every preferenceMatrix column exactly doubled
+        against per-country rows until the country-less cut was excluded. Zero
+        console errors across every surface, checked in a real browser at 375 /
+        768 / 1440.
+
+    - type: split
+      heading: "What it cost"
+      left:
+        heading: "Easier now"
+        bullets:
+          - "Brand filter is an index lookup"
+          - "Game picks feed the preference matrix"
+          - "Admin reviews in-queue, no DB edits"
+      right:
+        heading: "Accepted"
+        bullets:
+          - "Modal stash: a manual invariant to keep"
+          - "Two discovery pools to keep coherent"
+          - "scrollRestoration is global mutable state"
+      note: >
+        Also accepted: two more capped localStorage buckets (browse state, play
+        history); discovery stays on discovery_swipe only — emitting interaction
+        there would double-count its fire-and-forget toggles, while this-or-that's
+        auto-like does emit it; and the fresh pool is a second query to maintain
+        alongside getForDiscovery. Each is small, but they are the kind of
+        invariant that only survives if it's written down — hence this deck.
+
+    - type: bullets
+      heading: "Still open"
+      bullets:
+        - "14 duplicate company pairs await merge decisions"
+        - "Discovery swipe-right on a liked product un-likes it"
+        - "Nothing committed — the whole batch sits unstaged"
+        - "Leaked service-account key still needs rotating"
+        - "make deploy still points at the empty prod deployment"
+      note: >
+        The toggle-unlike is pre-existing and disclosed: discovery's swipe-right
+        calls interactions.toggle with no myTypes guard, so swiping right on an
+        already-liked product silently removes the like (this-or-that has the
+        guard). The 14 pairs are task #16, waiting on owner decisions. The leaked
+        key (82f4b76b…) had its OAuth client deleted in GCP but the key itself is
+        unrotated. Also open: GA4 'mark key events' + sitemap submission are
+        owner console tasks; the Connectors panel mislabels provisioned-but-
+        unwritten sources; 5 real moderation items await the owner's call;
+        re-deciding a decided product leaves no riskFlags audit row.
+
+    - type: cta
+      heading: "Commit this batch, then the launch checklist"
+      action: "Say the word — themed commits on feature/insights-mobile-play-polish"
+      subtext: "Then: 14 merge decisions, SA key rotation, GA4 key events"

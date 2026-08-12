@@ -3,7 +3,7 @@
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { state, THEMES } from './state.js';
-import { showSlide, updateCounter, syncFilmstrip, update } from './render.js';
+import { showSlide, updateCounter, syncFilmstrip, renderFilmstrip, update } from './render.js';
 import { openFullscreen, closeFullscreen, fsPrev, fsNext,
          openGrid, closeGrid,
          openPresenter, closePresenter, pressPrev, pressNext } from './preview.js';
@@ -46,8 +46,11 @@ export function nextSlide() {
 export function setTheme(name) {
   if (!THEMES[name]) return;
   state.currentTheme = name;
+  state.themeOverride = true;
   localStorage.setItem('pres-sage-theme', name);
-  if (state.slides.length) showSlide(state.current);
+  const sel = document.getElementById('theme-select');
+  if (sel && sel.value !== name) sel.value = name;
+  if (state.slides.length) { showSlide(state.current); renderFilmstrip(); }
 }
 
 /* ── Insert-slide dropdown ────────────────────────────────────────────── */
@@ -91,6 +94,7 @@ export function loadSample() {
   subtitle: "From polling chaos to reactive clarity"
   author: "Luciano"
   date: "2026-03"
+  # theme: royal          # optional deck-wide look — see the Theme dropdown for names
 
   slides:
     - type: title

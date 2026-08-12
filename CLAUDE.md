@@ -25,6 +25,7 @@ presentation:
   subtitle: "..."         # optional
   author: "..."           # optional
   date: "YYYY-MM"         # optional
+  theme: "royal"          # optional deck-wide look — see "Deck themes" below
 
   slides:
     - type: title
@@ -115,6 +116,32 @@ Any slide can override its background with `background:`. Supports preset names 
 ```
 
 **Presets:** `aurora` (purple-teal) · `sunset` (orange-pink) · `ocean` (deep blue-cyan) · `ember` (red-amber) · `midnight` (indigo-black) · `forest` (green) · `storm` (blue-grey)
+
+### Deck themes
+
+`presentation.theme:` sets the whole deck's default look — background, accent, text, and code
+colors on every slide. The viewer's Theme dropdown still overrides it for that session; without
+either, the visitor's saved preference (then `neorgon`) applies. An unknown name warns in the
+audit bar and keeps the current theme.
+
+| Theme | Tone | Look |
+|---|---|---|
+| `neorgon` | dark | Near-black navy, electric-blue accent (site default) |
+| `royal` | dark | Saturated deep blue, bright blue accent |
+| `midnight` | dark | Indigo-violet |
+| `forest` | dark | Deep green, mint accent |
+| `ember` | dark | Warm black, amber accent |
+| `graphite` | dark | Neutral charcoal, silver accent — the understated one |
+| `minimal` | light | Cool slate white, royal-blue accent |
+| `azure` | light | Blue-tinted white, bright blue accent |
+| `meadow` | light | Green-tinted white, leaf-green accent |
+| `dawn` | light | Warm cream, burnt-orange accent |
+
+Theme names are **colors, never brands or clients** — the name travels inside every exported
+YAML, so pick the palette that matches the room, not the customer. Canonical definitions:
+`THEMES` in `js/state.js` (key order there = dropdown order). All export paths follow the
+active theme: PPTX derives its colors from it, standalone HTML and Reveal render with it, and
+Marp front-matter carries its background/text colors.
 
 ---
 

@@ -8,6 +8,7 @@ presentation:
   subtitle: "A short subtitle that frames the talk"
   author: "Your Name"
   date: "YYYY-MM"
+  # theme: royal          # optional deck-wide look — full list in CLAUDE.md (Deck themes)
 
   slides:
 
@@ -22,7 +23,7 @@ presentation:
       # Coach: ≤5 bullets, ≤10 words each. Fragments beat full sentences.
       bullets:
         - "Bullet one — the first pain point"
-        - "Bullet two — make it concrete, add a number if you have one"
+        - "Bullet two — concrete, with a number"
         - "Bullet three — keep it to what the audience feels"
 
     # ── Before / after or option comparison ──────────────────────────────────

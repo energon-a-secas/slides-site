@@ -20,8 +20,10 @@ export function exportYAML() {
 export function exportMarp() {
   if (!state.slides.length) { showToast('Load a presentation first'); return; }
   const { meta, slides } = state;
+  const t = THEMES[state.currentTheme] || THEMES.neorgon;
   const lines = [
     '---', 'marp: true', 'theme: default', 'paginate: true',
+    `backgroundColor: "${t.bg}"`, `color: "${t.text}"`,
     `title: "${meta.title}"`, `author: "${meta.author}"`, '---', '',
   ];
 
@@ -178,15 +180,25 @@ export function exportPPTX() {
     if (m) return [m[1], m[2], m[3]].map(n => Number(n).toString(16).padStart(2, '0')).join('');
     return 'FFFFFF';
   };
+  // PPTX shapes have no alpha channel in fills' hex — recover the rgba alpha
+  // so translucent theme tokens become a transparency percentage instead.
+  const alphaOf = (css) => {
+    const m = String(css || '').match(/rgba\([^)]*,\s*([\d.]+)\s*\)/);
+    return m ? parseFloat(m[1]) : 1;
+  };
   const C = {
     bg:      hex(t.bg),
     bg2:     hex(t.bg),
     accent:  hex(t.accent),
+    on_accent: hex(t.onAccent || '#ffffff'),
     white:   hex(t.text),
+    body:    hex(t.ts),
+    line:    hex(t.text),
     muted:   hex(t.muted) || '8899bb',
     dim:     hex(t.dim) || '445566',
     bullet:  hex(t.codeText),
-    code_bg: '000000',
+    code_bg: hex(t.codeBg),
+    code_tr: Math.round((1 - alphaOf(t.codeBg)) * 100),
   };
 
   slides.forEach((slide) => {
@@ -231,7 +243,7 @@ export function exportPPTX() {
           fontSize: 19, bold: true, color: C.white, valign: 'middle',
         });
         s.addShape(pptx.ShapeType.line, {
-          x: 0.4, y: 1.05, w: 9.2, h: 0, line: { color: '1a2a3a', width: 1 },
+          x: 0.4, y: 1.05, w: 9.2, h: 0, line: { color: C.line, width: 1, transparency: 85 },
         });
         (slide.bullets || []).forEach((b, i) => {
           s.addShape(pptx.ShapeType.ellipse, {
@@ -240,7 +252,7 @@ export function exportPPTX() {
           });
           s.addText(String(b), {
             x: 0.68, y: 1.3 + i * 0.62, w: 8.9, h: 0.56,
-            fontSize: 13, color: 'e2e8f0', valign: 'middle',
+            fontSize: 13, color: C.body, valign: 'middle',
           });
         });
         break;
@@ -251,23 +263,23 @@ export function exportPPTX() {
           fontSize: 19, bold: true, color: C.white,
         });
         s.addShape(pptx.ShapeType.line, {
-          x: 0.4, y: 1.05, w: 9.2, h: 0, line: { color: '1a2a3a', width: 1 },
+          x: 0.4, y: 1.05, w: 9.2, h: 0, line: { color: C.line, width: 1, transparency: 85 },
         });
         s.addShape(pptx.ShapeType.line, {
-          x: 5, y: 1.15, w: 0, h: 3.5, line: { color: '1a2a3a', width: 1 },
+          x: 5, y: 1.15, w: 0, h: 3.5, line: { color: C.line, width: 1, transparency: 85 },
         });
         if (slide.left?.heading)
           s.addText(slide.left.heading, {
             x: 0.4, y: 1.15, w: 4.3, h: 0.42, fontSize: 11, bold: true, color: C.accent,
           });
         (slide.left?.bullets || []).forEach((b, i) =>
-          s.addText(`\u2022 ${b}`, { x: 0.4, y: 1.65 + i * 0.56, w: 4.3, h: 0.5, fontSize: 12, color: 'e2e8f0' }));
+          s.addText(`\u2022 ${b}`, { x: 0.4, y: 1.65 + i * 0.56, w: 4.3, h: 0.5, fontSize: 12, color: C.body }));
         if (slide.right?.heading)
           s.addText(slide.right.heading, {
             x: 5.3, y: 1.15, w: 4.3, h: 0.42, fontSize: 11, bold: true, color: C.accent,
           });
         (slide.right?.bullets || []).forEach((b, i) =>
-          s.addText(`\u2022 ${b}`, { x: 5.3, y: 1.65 + i * 0.56, w: 4.3, h: 0.5, fontSize: 12, color: 'e2e8f0' }));
+          s.addText(`\u2022 ${b}`, { x: 5.3, y: 1.65 + i * 0.56, w: 4.3, h: 0.5, fontSize: 12, color: C.body }));
         break;
       }
 
@@ -277,7 +289,7 @@ export function exportPPTX() {
         });
         s.addShape(pptx.ShapeType.rect, {
           x: 0.4, y: 1.05, w: 9.2, h: 3.6,
-          fill: { color: C.code_bg, transparency: 30 }, line: { color: '1a2a3a', width: 1 },
+          fill: { color: C.code_bg, transparency: C.code_tr }, line: { color: C.line, width: 1, transparency: 85 },
         });
         s.addText(slide.code || '', {
           x: 0.6, y: 1.15, w: 8.8, h: 3.4,
@@ -301,7 +313,7 @@ export function exportPPTX() {
         break;
 
       case 'divider':
-        s.background = { color: '08102a' };
+        s.background = { color: C.bg2 };
         s.addText(slide.heading || '', {
           x: 0.8, y: 1.4, w: 8.4, h: 1.4,
           fontSize: 34, bold: true, color: C.white, align: 'center',
@@ -340,7 +352,7 @@ export function exportPPTX() {
           });
           s.addText(`\u2192 ${slide.action}`, {
             x: 2.5, y: 2.5, w: 5, h: 0.95,
-            fontSize: 15, bold: true, color: C.white, align: 'center', valign: 'middle',
+            fontSize: 15, bold: true, color: C.on_accent, align: 'center', valign: 'middle',
           });
         }
         if (slide.subtext)
@@ -361,7 +373,7 @@ export function exportPPTX() {
       case 'stats':
         if (slide.heading) {
           s.addText(slide.heading, { x: 0.4, y: 0.25, w: 9.2, h: 0.72, fontSize: 19, bold: true, color: C.white });
-          s.addShape(pptx.ShapeType.line, { x: 0.4, y: 1.05, w: 9.2, h: 0, line: { color: '1a2a3a', width: 1 } });
+          s.addShape(pptx.ShapeType.line, { x: 0.4, y: 1.05, w: 9.2, h: 0, line: { color: C.line, width: 1, transparency: 85 } });
         }
         (slide.stats || []).forEach((st, si) => {
           const count = (slide.stats || []).length;
@@ -375,33 +387,33 @@ export function exportPPTX() {
       case 'timeline':
         if (slide.heading) {
           s.addText(slide.heading, { x: 0.4, y: 0.25, w: 9.2, h: 0.72, fontSize: 19, bold: true, color: C.white });
-          s.addShape(pptx.ShapeType.line, { x: 0.4, y: 1.05, w: 9.2, h: 0, line: { color: '1a2a3a', width: 1 } });
+          s.addShape(pptx.ShapeType.line, { x: 0.4, y: 1.05, w: 9.2, h: 0, line: { color: C.line, width: 1, transparency: 85 } });
         }
         (slide.steps || []).forEach((st, si) => {
           const count = (slide.steps || []).length;
           const colW = 9.2 / count;
           const x = 0.4 + si * colW;
           s.addShape(pptx.ShapeType.ellipse, { x: x + colW / 2 - 0.2, y: 1.3, w: 0.4, h: 0.4, fill: { color: C.accent }, line: { type: 'none' } });
-          s.addText(String(si + 1), { x: x + colW / 2 - 0.2, y: 1.3, w: 0.4, h: 0.4, fontSize: 11, bold: true, color: C.white, align: 'center', valign: 'middle' });
+          s.addText(String(si + 1), { x: x + colW / 2 - 0.2, y: 1.3, w: 0.4, h: 0.4, fontSize: 11, bold: true, color: C.on_accent, align: 'center', valign: 'middle' });
           s.addText(String(st.label || ''), { x, y: 1.85, w: colW, h: 0.35, fontSize: 9, bold: true, color: C.accent, align: 'center' });
-          s.addText(String(st.text || ''), { x, y: 2.2, w: colW, h: 0.7, fontSize: 10, color: 'e2e8f0', align: 'center', wrap: true });
+          s.addText(String(st.text || ''), { x, y: 2.2, w: colW, h: 0.7, fontSize: 10, color: C.body, align: 'center', wrap: true });
         });
         break;
 
       case 'columns':
         if (slide.heading) {
           s.addText(slide.heading, { x: 0.4, y: 0.25, w: 9.2, h: 0.72, fontSize: 19, bold: true, color: C.white });
-          s.addShape(pptx.ShapeType.line, { x: 0.4, y: 1.05, w: 9.2, h: 0, line: { color: '1a2a3a', width: 1 } });
-          s.addShape(pptx.ShapeType.line, { x: 5, y: 1.15, w: 0, h: 3.5, line: { color: '1a2a3a', width: 1 } });
+          s.addShape(pptx.ShapeType.line, { x: 0.4, y: 1.05, w: 9.2, h: 0, line: { color: C.line, width: 1, transparency: 85 } });
+          s.addShape(pptx.ShapeType.line, { x: 5, y: 1.15, w: 0, h: 3.5, line: { color: C.line, width: 1, transparency: 85 } });
         }
         if (slide.left?.heading)
           s.addText(slide.left.heading, { x: 0.4, y: 1.15, w: 4.3, h: 0.42, fontSize: 11, bold: true, color: C.accent });
         if (slide.left?.text)
-          s.addText(slide.left.text, { x: 0.4, y: 1.65, w: 4.3, h: 3, fontSize: 11, color: 'e2e8f0', wrap: true, valign: 'top' });
+          s.addText(slide.left.text, { x: 0.4, y: 1.65, w: 4.3, h: 3, fontSize: 11, color: C.body, wrap: true, valign: 'top' });
         if (slide.right?.heading)
           s.addText(slide.right.heading, { x: 5.3, y: 1.15, w: 4.3, h: 0.42, fontSize: 11, bold: true, color: C.accent });
         if (slide.right?.text)
-          s.addText(slide.right.text, { x: 5.3, y: 1.65, w: 4.3, h: 3, fontSize: 11, color: 'e2e8f0', wrap: true, valign: 'top' });
+          s.addText(slide.right.text, { x: 5.3, y: 1.65, w: 4.3, h: 3, fontSize: 11, color: C.body, wrap: true, valign: 'top' });
         break;
     }
 

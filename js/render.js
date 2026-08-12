@@ -286,6 +286,16 @@ export function update() {
   state.error  = null;
   state.slides = result.slides;
   state.meta   = result.meta;
+
+  // Deck-declared theme: applies until the visitor picks one themselves this
+  // session. Never persisted — localStorage keeps the visitor's own choice.
+  const deckTheme = result.meta.theme;
+  if (deckTheme && THEMES[deckTheme] && !state.themeOverride && state.currentTheme !== deckTheme) {
+    state.currentTheme = deckTheme;
+    const sel = document.getElementById('theme-select');
+    if (sel) sel.value = deckTheme;
+  }
+
   if (state.current >= state.slides.length)
     state.current = Math.max(0, state.slides.length - 1);
 

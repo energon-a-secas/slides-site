@@ -2,6 +2,8 @@
    YAML parsing + slide validation (coaching)
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { THEMES } from './state.js';
+
 /** Parse raw YAML text into { meta, slides } or { error } */
 export function parseYAML(text) {
   try {
@@ -16,6 +18,7 @@ export function parseYAML(text) {
         subtitle: p.subtitle || '',
         author:   p.author   || '',
         date:     p.date     || '',
+        theme:    p.theme    || '',
         logo:     p.logo     || '',
         logo_all: !!p.logo_all,
       },
@@ -75,6 +78,9 @@ export function validate(slides, meta) {
   });
 
   // Deck-level checks
+  if (meta?.theme && !THEMES[meta.theme])
+    add('warn', null, `Unknown theme "${meta.theme}" — falling back to the current one. Available: ${Object.keys(THEMES).join(', ')}.`);
+
   if (slides.length > 0 && slides[0].type !== 'title')
     add('info', 1, 'First slide is not a title. Consider adding one for context.');
 

@@ -214,7 +214,7 @@ body {
 }
 .slide-type-title .s-heading {
   font-size: 40px;
-  font-weight: 700; color: var(--sl-text, #fff); line-height: 1.2;
+  font-weight: 700; color: #fff; line-height: 1.2;
 }
 .accent-bar {
   width: 48px; height: 4px; border-radius: 2px;
@@ -222,12 +222,12 @@ body {
 }
 .slide-type-title .s-subtitle {
   font-size: 18px;
-  color: var(--sl-muted, rgba(255,255,255,.5)); font-weight: 400;
+  color: rgba(255,255,255,.5); font-weight: 400;
 }
 .slide-type-title .s-meta {
   position: absolute; bottom: 22px; left: 60px; right: 60px;
   display: flex; justify-content: space-between;
-  font-size: 12px; color: var(--sl-dim, rgba(255,255,255,.25));
+  font-size: 12px; color: rgba(255,255,255,.25);
 }
 
 /* Bullets slide */
@@ -268,8 +268,8 @@ body {
 /* Code slide */
 .slide-type-code { justify-content: flex-start; }
 .code-block {
-  background: var(--sl-code-bg, rgba(0,0,0,.5));
-  border: 1px solid var(--sl-border, rgba(255,255,255,.07));
+  background: rgba(0,0,0,.5);
+  border: 1px solid rgba(255,255,255,.07);
   border-radius: 8px; padding: 18px;
   flex: 1; overflow: hidden;
 }
@@ -315,7 +315,7 @@ body {
 }
 .slide-type-divider .s-subtitle {
   font-size: 17px;
-  color: var(--sl-muted, rgba(255,255,255,.45)); margin-top: 14px;
+  color: rgba(255,255,255,.45); margin-top: 14px;
 }
 
 /* Q&A slide */
@@ -329,7 +329,7 @@ body {
 }
 .slide-type-qa .s-subtext {
   font-size: 16px;
-  color: var(--sl-muted, rgba(255,255,255,.4)); margin-top: 12px;
+  color: rgba(255,255,255,.4); margin-top: 12px;
 }
 
 /* CTA slide */
@@ -341,7 +341,7 @@ body {
   border-bottom: none; margin-bottom: 24px; padding-bottom: 0;
 }
 .cta-pill {
-  background: var(--sl-accent, #0063e5); color: var(--sl-on-accent, #fff);
+  background: var(--sl-accent, #0063e5); color: #fff;
   font-weight: 700; font-size: 18px;
   padding: 13px 32px; border-radius: 9px;
   display: inline-block;
@@ -349,7 +349,7 @@ body {
 .s-subtext {
   margin-top: 16px;
   font-size: 14px;
-  color: var(--sl-muted, rgba(255,255,255,.38));
+  color: rgba(255,255,255,.38);
 }
 
 /* Image slide */
@@ -400,7 +400,7 @@ body {
 .timeline-step:last-child::after { display: none; }
 .timeline-dot {
   width: 32px; height: 32px; border-radius: 50%;
-  background: var(--sl-accent, #0063e5); color: var(--sl-on-accent, #fff);
+  background: var(--sl-accent, #0063e5); color: #fff;
   font-size: 13px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   position: relative; z-index: 1; flex-shrink: 0;
