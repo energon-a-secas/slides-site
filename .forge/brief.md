@@ -25,6 +25,8 @@ Round 8: logo stamp/size/placeholder
 
 - `2026-08-12 18:24` logo_pos/logo_size/placeholder shipped + verified (110px monogram on title, bottom-left stamp via computed styles, both bad-value warnings fire); pushed to slides-site
 
+- `2026-08-12 23:02` stream **slides-contrast** done — WCAG check in parser.js validate(); verified CLI+browser; pushed as c6215cd via https workaround
+
 ## Measured
 
 <!-- Numbers you actually observed, with how you got them. An estimate recorded
