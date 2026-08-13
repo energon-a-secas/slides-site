@@ -34,6 +34,19 @@ export function parseYAML(text) {
   }
 }
 
+/** WCAG relative luminance of a #rgb/#rrggbb color; null when not hex. */
+function relLuminance(color) {
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(color).trim());
+  if (!m) return null;
+  let hex = m[1];
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  const chan = (i) => {
+    const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * chan(0) + 0.7152 * chan(2) + 0.0722 * chan(4);
+}
+
 /** Run coaching / density checks on a parsed deck. Returns array of { level, slide, msg } */
 export function validate(slides, meta) {
   const W = [];
@@ -102,6 +115,41 @@ export function validate(slides, meta) {
           add('warn', null, `brand.${k} is not a brand key — ignored. Allowed: ${allowed.join(', ')}.`);
         else if (typeof meta.brand[k] !== 'string' || !meta.brand[k])
           add('warn', null, `brand.${k} must be a CSS color string.`);
+      }
+
+      // Contrast: brand colors override curated themes, so nothing else vouches
+      // for their readability. Pairs are resolved the way the player resolves
+      // them (deck theme if valid, else the site default), and a pair is only
+      // checked when at least one member comes from brand — fully theme-derived
+      // pairs are the theme author's problem, not the deck's.
+      const themeName = (meta.theme && THEMES[meta.theme]) ? meta.theme : 'neorgon';
+      const base = THEMES[themeName];
+      const b = meta.brand;
+      const pairs = [
+        ['text', b.text || base.text, !!b.text, 'bg', b.bg || base.bg, !!b.bg, 4.5, 'warn'],
+        ['on_accent', b.on_accent || '#ffffff', !!b.on_accent, 'accent', b.accent || base.accent, !!b.accent, 3, 'warn'],
+        ['accent', b.accent || base.accent, !!b.accent, 'bg', b.bg || base.bg, !!b.bg, 3, 'info'],
+      ];
+      const unhexed = new Set();
+      for (const [an, a, aBrand, bn, bv, bBrand, min, level] of pairs) {
+        if (!aBrand && !bBrand) continue;
+        const la = relLuminance(a);
+        const lb = relLuminance(bv);
+        if (la === null || lb === null) {
+          const [cn, cv, cBrand] = la === null ? [an, a, aBrand] : [bn, bv, bBrand];
+          if (cBrand && !unhexed.has(cn)) {
+            unhexed.add(cn);
+            add('info', null, `brand ${cn} "${cv}" is not a hex color — contrast unchecked. Use #rrggbb to get the check.`);
+          }
+          continue;
+        }
+        const ratio = (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+        if (ratio < min) {
+          const from = (name, isBrand) =>
+            isBrand ? '' : (name === 'on_accent' ? ` (${name} is the default #ffffff)` : ` (${name} from the ${themeName} theme)`);
+          add(level, null,
+            `brand contrast: ${an} on ${bn} is ${ratio.toFixed(1)}:1 — below ${min}:1${from(an, aBrand)}${from(bn, bBrand)}.`);
+        }
       }
     }
   }

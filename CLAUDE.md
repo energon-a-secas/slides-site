@@ -167,8 +167,11 @@ colors, whatever theme the viewer picks, so every deck for the same brand stays 
 ```
 
 Only those four keys are accepted; anything else warns in the audit and is ignored. Brand
-colors carry into PPTX/HTML/Reveal exports the same way the theme does. Pick `bg`/`text`
-pairs with real contrast — the audit checks key names, not your color taste.
+colors carry into PPTX/HTML/Reveal exports the same way the theme does. The audit also
+checks the **contrast** of brand pairs (resolved against the deck's theme, or the default):
+`text` on `bg` below 4.5:1 warns, `on_accent` on `accent` below 3:1 warns, `accent` on
+`bg` below 3:1 notes. Hex colors only — a non-hex brand color is flagged as unchecked,
+never assumed fine. Fully theme-derived pairs are exempt; the curated themes already pass.
 
 ### Logo
 
