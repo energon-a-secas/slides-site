@@ -24,3 +24,11 @@ package-lock.json
 
 # ── Scratch decks ──────────────────────────────────────────────────────────────
 .tmp-*
+
+# ── Neorgon base (enforced by smoke check 20) ─────────────────────────────────
+!.env.example
+.forge/
+__pycache__/
+*.py[cod]
+skills-archived/
+*.log
