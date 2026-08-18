@@ -1,4 +1,4 @@
-# Presentation Sage — CLAUDE.md
+# Presentation Sage: CLAUDE.md
 
 This file tells Claude how to help create and critique presentations in this project.
 The goal: **fewer iterations, faster structure, shorter slides, better flow.**
@@ -128,7 +128,7 @@ Any slide can override its background with `background:`. Supports preset names 
 
 ### Deck themes
 
-`presentation.theme:` sets the whole deck's default look — background, accent, text, and code
+`presentation.theme:` sets the whole deck's default look: background, accent, text, and code
 colors on every slide. The viewer's Theme dropdown still overrides it for that session; without
 either, the visitor's saved preference (then `neorgon`) applies. An unknown name warns in the
 audit bar and keeps the current theme.
@@ -140,13 +140,13 @@ audit bar and keeps the current theme.
 | `midnight` | dark | Indigo-violet |
 | `forest` | dark | Deep green, mint accent |
 | `ember` | dark | Warm black, amber accent |
-| `graphite` | dark | Neutral charcoal, silver accent — the understated one |
+| `graphite` | dark | Neutral charcoal, silver accent: the understated one |
 | `minimal` | light | Cool slate white, royal-blue accent |
 | `azure` | light | Blue-tinted white, bright blue accent |
 | `meadow` | light | Green-tinted white, leaf-green accent |
 | `dawn` | light | Warm cream, burnt-orange accent |
 
-Theme names are **colors, never brands or clients** — the name travels inside every exported
+Theme names are **colors, never brands or clients**. The name travels inside every exported
 YAML, so pick the palette that matches the room, not the customer. Canonical definitions:
 `THEMES` in `js/state.js` (key order there = dropdown order). All export paths follow the
 active theme: PPTX derives its colors from it, standalone HTML and Reveal render with it, and
@@ -154,7 +154,7 @@ Marp front-matter carries its background/text colors.
 
 ### Brand colors
 
-The place brand identity *does* belong is the deck's own YAML — it travels with the deck
+The place brand identity *does* belong is the deck's own YAML. It travels with the deck
 instead of polluting the shared theme list. `presentation.brand:` overrides the active theme's
 colors, whatever theme the viewer picks, so every deck for the same brand stays consistent:
 
@@ -170,14 +170,14 @@ Only those four keys are accepted; anything else warns in the audit and is ignor
 colors carry into PPTX/HTML/Reveal exports the same way the theme does. The audit also
 checks the **contrast** of brand pairs (resolved against the deck's theme, or the default):
 `text` on `bg` below 4.5:1 warns, `on_accent` on `accent` below 3:1 warns, `accent` on
-`bg` below 3:1 notes. Hex colors only — a non-hex brand color is flagged as unchecked,
+`bg` below 3:1 notes. Hex colors only. A non-hex brand color is flagged as unchecked,
 never assumed fine. Fully theme-derived pairs are exempt; the curated themes already pass.
 
 ### Logo
 
-`logo:` accepts four forms: a **full URL** (`https://…`), a **`data:` URI** — the toolbar's
+`logo:` accepts four forms: a **full URL** (`https://…`), a **`data:` URI**. The toolbar's
 **◉ Logo** button embeds a local image file as one, keeping the deck a single self-contained
-file — a **relative path**, which only resolves when the deck is self-hosted beside the image
+file: a **relative path**, which only resolves when the deck is self-hosted beside the image
 (the audit flags this case), or **`placeholder`**, a generated monogram (the title's first
 letter on the accent color) for drafts written before brand assets exist.
 
@@ -185,7 +185,7 @@ Placement and size: `logo_all: true` stamps the logo on every non-title slide, s
 persistent; `logo_pos:` picks its corner (`bottom-left` for the classic stamp; `top-right` is
 the default, and `bottom-right` sits above the slide number, which owns that corner).
 `logo_size:` sets the **title-slide** logo height in px (16–240, default 52) for decks where
-the brand should lead the first screen. It never affects the stamp — that is
+the brand should lead the first screen. It never affects the stamp. That is
 `logo_stamp_size:` (12–120, default 30), a separate knob so growing the opening logo cannot
 quietly make every slide shout.
 
@@ -201,10 +201,10 @@ derived from the background's luminance, so every pattern works on dark and ligh
 | `grid` | Thin ruled grid |
 | `diagonal` | 45° hairlines |
 | `rings` | Concentric rings from the top-right corner |
-| `orbs` | Two soft glow circles — big bottom-right, small upper-left; the non-tiling one |
+| `orbs` | Two soft glow circles: big bottom-right, small upper-left; the non-tiling one |
 
 Patterns render in the player and the DOM-derived exports (standalone HTML, Reveal); PPTX
-and Marp get flat theme/brand colors — say so if someone asks why the PPTX looks plainer.
+and Marp get flat theme/brand colors: say so if someone asks why the PPTX looks plainer.
 
 ---
 
@@ -226,7 +226,7 @@ node validate.mjs deck.yaml    # exit 0 clean · 1 warnings with slide numbers �
 
 `validate.mjs` is a thin CLI over the player's own `js/parser.js`, so it cannot disagree with
 the audit bar. It is published at `https://slides.neorgon.com/validate.mjs` and runs standalone
-from any repo (it fetches the player's rules when no checkout is beside it) — validate before a
+from any repo (it fetches the player's rules when no checkout is beside it), validate before a
 human opens the deck. It checks density, not geometry: a passing deck can still overflow a
 slide, so the player click-through remains the final check.
 
@@ -234,7 +234,7 @@ slide, so the player click-through remains the final check.
 
 ## Per-slide coaching checklist
 
-Before writing each slide, ask yourself — and flag if the answer is "no":
+Before writing each slide, ask yourself: and flag if the answer is "no":
 
 1. **One idea?** Can you write the slide's point in a single sentence?
 2. **Does the heading tell the whole story?** Someone skimming should get the gist from headings alone.
@@ -248,9 +248,9 @@ Before writing each slide, ask yourself — and flag if the answer is "no":
 
 After the full deck is written, check:
 
-- [ ] Does **slide 1** define the problem or context — not just announce the topic?
+- [ ] Does **slide 1** define the problem or context: not just announce the topic?
 - [ ] Is the order **problem → solution → proof → ask**? Or are you leading with the solution before the audience understands the pain?
-- [ ] Are you **getting ahead of yourself** — referencing things the audience doesn't know yet?
+- [ ] Are you **getting ahead of yourself**: referencing things the audience doesn't know yet?
 - [ ] Is there a **Q&A or pause slide** at least every 5 slides?
 - [ ] Does the **last slide** tell the audience exactly what to do next?
 - [ ] Could you remove any slide entirely without losing the argument?
@@ -281,22 +281,22 @@ hands-on (code × N) → recap (bullets) → next steps (cta)
 
 ---
 
-## Slide type guide — when to use what
+## Slide type guide: when to use what
 
 | Type | Use when |
 |------|----------|
 | `title` | First slide only |
 | `bullets` | Listing 2–5 parallel points with no comparison needed |
 | `split` | Comparing two things side-by-side (before/after, option A/B) |
-| `code` | Showing a concrete snippet — prefer small, focused examples |
+| `code` | Showing a concrete snippet: prefer small, focused examples |
 | `quote` | A principle, a user quote, or a striking stat |
 | `divider` | Transitioning between major sections (acts as a chapter marker) |
-| `qa` | Planned interaction points — don't wait until the end |
-| `cta` | Final slide — one action, stated directly |
-| `image` | Showing a screenshot, diagram, or photo — optional heading + caption |
-| `stats` | Big numbers / KPIs — up to 4 metrics side by side |
-| `timeline` | Step sequence — roadmaps, migration phases, project milestones |
-| `columns` | Two-column free text — pros/cons narratives, before/after descriptions |
+| `qa` | Planned interaction points: don't wait until the end |
+| `cta` | Final slide: one action, stated directly |
+| `image` | Showing a screenshot, diagram, or photo: optional heading + caption |
+| `stats` | Big numbers / KPIs: up to 4 metrics side by side |
+| `timeline` | Step sequence: roadmaps, migration phases, project milestones |
+| `columns` | Two-column free text: pros/cons narratives, before/after descriptions |
 
 ---
 
@@ -316,7 +316,7 @@ hands-on (code × N) → recap (bullets) → next steps (cta)
 
 Six export paths: PPTX (app), PDF/HTML via Marp CLI, standalone HTML, Reveal.js HTML, GitHub Pages bundle, gallery manager.
 
-**📖 Read `docs/references/export-workflow.md` when** the user wants to export a deck — it holds the exact toolbar buttons, the `marp` CLI commands, and the GitHub Pages multi-talk repo layout.
+**📖 Read `docs/references/export-workflow.md` when** the user wants to export a deck. It holds the exact toolbar buttons, the `marp` CLI commands, and the GitHub Pages multi-talk repo layout.
 
 ---
 
