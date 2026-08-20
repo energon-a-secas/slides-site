@@ -9,12 +9,133 @@
 ## Files for agents
 
 - [Deck schema](https://slides.neorgon.com/CLAUDE.md): Every slide type, the density rules, and the flow audit checklist
-- [Worked example](https://slides.neorgon.com/template.yaml): A complete deck that validates clean — start from this
-- [Deck validator](https://slides.neorgon.com/validate.mjs): Density checks without the player: node validate.mjs <deck.yaml | dir> validates one deck or every deck in a repo; --fresh checks a checkout still matches the live rules (standalone — fetches the player's own rules when run outside a checkout)
+- [Worked example](https://slides.neorgon.com/template.yaml): A complete deck that validates clean, start from this
+- [Deck builder](https://slides.neorgon.com/render-deck.mjs): Build PPTX, PDF, HTML or Markdown from a deck without opening the app. See "Generating files" below
+- [deckcraft skill](https://github.com/LucianoAdonis/neorgon-forge): Writes and critiques decks for this tool, covering the argument the density audit cannot check. See "Writing a deck that argues" below
+- [Export checker](https://slides.neorgon.com/check-exports.mjs): Checks the exported FILE rather than the deck: strings that never made it, images whose bytes do not match their extension, local paths leaking into artifacts, shapes off the page. `node check-exports.mjs <deck.yaml | dir>`, exit 0 clean · 1 defects · 2 could not run
+- [Deck validator](https://slides.neorgon.com/validate.mjs): Density checks without the player: node validate.mjs <deck.yaml | dir> validates one deck or every deck in a repo; --fresh checks a checkout still matches the live rules (standalone, fetches the player's own rules when run outside a checkout)
+
+## Example decks
+
+Twelve complete decks, each validating clean. Fetch one and edit it rather than starting from an empty file. Browse them at https://slides.neorgon.com/deck-library/
+
+- [Executive review](https://slides.neorgon.com/deck-library/decks/exec-review.yaml): numbers first, one table, one ask. Shows agenda, stats, table, grid, footer rail
+- [Technical design review](https://slides.neorgon.com/deck-library/decks/design-review.yaml): code, split, media, timeline, logo stamp
+- [Workshop](https://slides.neorgon.com/deck-library/decks/workshop.yaml): a light theme, plain grid, repeated Q&A pauses
+- [Launch announcement](https://slides.neorgon.com/deck-library/decks/launch.yaml): the deck that uses gradients, on a dark theme
+- [Incident postmortem](https://slides.neorgon.com/deck-library/decks/postmortem.yaml): timeline, checklist of actions, matrix and appendix
+- [Onboarding week one](https://slides.neorgon.com/deck-library/decks/onboarding.yaml), [all-hands update](https://slides.neorgon.com/deck-library/decks/all-hands.yaml): checklist and people
+- [Customer QBR](https://slides.neorgon.com/deck-library/decks/qbr.yaml), [conference talk](https://slides.neorgon.com/deck-library/decks/conf-talk.yaml): matrix, compare, appendix
+- [Daily standup](https://slides.neorgon.com/deck-library/decks/standup.yaml), [feature pitch](https://slides.neorgon.com/deck-library/decks/pitch.yaml), [sprint retro](https://slides.neorgon.com/deck-library/decks/retro.yaml): short bullet-only formats
+- [The manifest](https://slides.neorgon.com/deck-library/decks/index.json): every deck with its category and what it demonstrates
+
+## Generating files: PPTX, PDF, HTML
+
+`render-deck.mjs` turns a deck YAML into a file. It imports the same serializer module the web app uses, so a deck built on a server is the deck the app would have handed you. Node 18 or newer.
+
+### Install
+
+```bash
+curl -O https://slides.neorgon.com/render-deck.mjs
+npm install js-yaml pptxgenjs @marp-team/marp-cli
+```
+
+Nothing is needed until you ask for the format that needs it, and a missing package prints its install line rather than a stack trace:
+
+| Dependency | Needed for | Notes |
+|---|---|---|
+| `js-yaml` | everything | Parses the deck |
+| `pptxgenjs` | `--pptx` | Writes PowerPoint with real, editable text boxes |
+| `@marp-team/marp-cli` | `--pdf`, `--html`, `--marp-pptx` | Spawns headless Chrome. On a server with no browser, install Chrome or set `CHROME_PATH` |
+
+The script also needs the player's `js/state.js` and `js/serialize.js` beside it, so run it from a checkout of the site rather than from the single downloaded file. Clone with `git clone https://github.com/energon-a-secas/slides-site` and run it in place.
+
+### Use
+
+```bash
+node render-deck.mjs deck.yaml                       # PPTX, the default
+node render-deck.mjs deck.yaml --pdf                 # PDF via Marp
+node render-deck.mjs deck.yaml --pptx --pdf --html   # all three
+node render-deck.mjs deck.yaml --md                  # Marp Markdown only, no Chrome needed
+node render-deck.mjs decks/ --pptx --out dist/       # every .yaml in a directory
+```
+
+Flags: `--out DIR` where to write · `--base DIR` what a root-absolute asset path means on disk (defaults to the site root) · `--quiet` print only the paths written · `--help`.
+
+### Which PPTX
+
+Two different files, and the difference matters:
+
+- `--pptx` builds the deck with **pptxgenjs**: every heading, bullet and table cell is a real PowerPoint object, so someone can open it and edit the text. Gradients and patterns are flattened to solid theme colours, because PPTX shapes have no CSS.
+- `--marp-pptx` builds it with **Marp**: each slide is one rendered image on a blank slide. It looks closer to the browser, and nothing in it can be edited. Use it for a read-only handout, not for a deck someone will pick up and change.
+
+### Two things that bite
+
+**Assets.** A deck written for the web says `/deck-library/assets/shot.svg`, meaning the site root. Node reads a leading `/` as the filesystem root and fails to find it. The script rewrites root-absolute `src:` and `logo:` values against `--base` (the site root by default), so the same deck builds in both places. Full `https://` URLs and `data:` URIs are passed through untouched.
+
+**PDF needs a browser.** Marp renders through headless Chrome. In CI, either use an image that ships Chrome or install it, then point `CHROME_PATH` at the binary. If PDF is unavailable, `--md` still gives you the Markdown to render elsewhere.
+
+### Validate before you build
+
+```bash
+node validate.mjs deck.yaml && node render-deck.mjs deck.yaml --pdf
+```
+
+To check the built file too, which is where the subtler faults live:
+
+```bash
+node check-exports.mjs deck.yaml
+```
+
+`validate.mjs` exits 0 clean, 1 on warnings, 2 on an unreadable deck, so it gates a build in one line.
+
+## Writing a deck that argues
+
+The density rules below are enforced by `validate.mjs`. They are necessary and not sufficient: a deck can pass every one of them and still say nothing, because the audit is content-blind by design and cannot tell a heading that states a claim from one that names a subject.
+
+The **`deckcraft`** skill covers the half the audit cannot reach. It is part of the Neorgon skill set and installs from [neorgon-forge](https://github.com/LucianoAdonis/neorgon-forge):
+
+```bash
+git clone https://github.com/LucianoAdonis/neorgon-forge && cd neorgon-forge
+bash bin/install.sh          # symlinks every skill into ~/.claude/skills
+```
+
+Then `/deckcraft <deck.yaml>` to critique one, or `/deckcraft "topic" --audience exec --minutes 20` to write one. What it adds over the audit:
+
+- **Assertion headings.** "Rollout" names a subject; "Nothing switches in week one" makes a claim. Measured across the twelve example decks, 2 of 48 content headings state a claim, and in nine of twelve the claim was already sitting one field lower, in `subtitle:` or `caption:`.
+- **Order by room.** An executive deck leads with the recommendation; a conference talk holds it to the end. These orderings genuinely conflict, so a deck built on the wrong one fails no matter how clean it validates.
+- **A lint for the faults the audit cannot see**, at `scripts/deck-lint.sh`: topic-label headings, a slide promising a link the deck does not contain, `None` sitting beside a real item in one bullet list, unlabelled comparison columns, missing alt text, and a heading asserting a number that appears nowhere on its slide. Run it beside `validate.mjs`, which owns density.
+
+Speaker notes are the one trap worth knowing without opening the skill: `note:` reaches the in-app presenter and nothing else. PPTX, Marp and standalone HTML drop it, and the Reveal export writes notes into markup with no plugin registered to open them. Anyone presenting from an exported file has no notes.
+
+## Themes, gradients, and patterns
+
+Three separate layers. Getting them confused is the most common way a generated deck comes out unreadable.
+
+**1. `theme:` (deck-wide)** sets background, text, accent, and code colours together. Six dark: `neorgon`, `royal`, `midnight`, `forest`, `ember`, `graphite`. Four light: `minimal`, `azure`, `meadow`, `dawn`. Pick by room, not by taste: light themes for a bright room or a printed handout, dark for a projector in a dim room. The curated pairs already pass contrast; nothing else needs checking.
+
+**2. `background:` (per slide)** replaces that one slide's background. Seven presets: `aurora`, `sunset`, `ocean`, `ember`, `midnight`, `forest`, `storm`. Any CSS value also works, for example `background: "linear-gradient(135deg, #1a0030, #0a0020)"`.
+
+The rule that matters: **all seven presets are dark, and a background does not change the theme's text colour.** Put `background: ocean` on a light-theme deck and you get dark ink on a dark slide. The validator now fails this with the measured ratio, so run it. Use gradients on dark themes, and sparingly: a section divider, a title, a closing CTA. A gradient on every slide is noise, and it makes the deck slower to read, not more impressive.
+
+```yaml
+presentation:
+  theme: midnight          # dark theme, so dark gradients are safe
+  slides:
+    - type: divider
+      heading: "What It Costs"
+      background: storm    # one gradient, marking a section boundary
+```
+
+**3. `pattern:` (deck-wide or per slide)** lays a texture over whatever background is underneath. Five: `dots` (fine dot grid), `grid` (thin ruled lines, reads as a ledger), `diagonal` (45 degree hairlines), `rings` (concentric arcs from the top-right), `orbs` (two soft glows, the only non-tiling one). The ink colour is derived from the background's luminance, so every pattern works on light and dark alike. Set one on the deck and it applies everywhere; set `pattern:` on a slide to override it; set `pattern: none` on a slide to opt that one out.
+
+Patterns are meant to be barely noticed. Use `grid` or `dots` for a data-heavy deck, `orbs` for a launch or a title-heavy deck, and nothing at all when the deck is mostly screenshots, which the texture will fight.
+
+Where they render: the player, standalone HTML, and Reveal all draw gradients and patterns. PPTX and Marp get flat theme colours instead, so say so if someone asks why the PowerPoint looks plainer.
+
+To apply either without writing YAML by hand, open the **Catalog** in the toolbar: it shows every slide type as a live preview and every gradient and pattern as a real swatch, and clicking one writes the key into the current slide or the whole deck.
 
 ## More Neorgon tools
 
 - [Neorgon hub](https://neorgon.com/): Browse and launch every tool from one page.
 - [Full suite index](https://neorgon.com/llms.txt): Machine-readable list of every Neorgon tool.
-
-<!-- generated by scripts/generate-llms.py — edits here are overwritten; to hand-author this file, delete this line -->

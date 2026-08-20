@@ -1,0 +1,114 @@
+# Conference talk: 25 minutes, one idea, a demo in the middle, and backup
+# slides for the questions you can predict.
+presentation:
+  title: "Stop Polling. Start Listening."
+  subtitle: "What we learned moving 18 teams off request loops"
+  author: "Your Name"
+  date: "2026-08"
+  theme: midnight
+  pattern: orbs
+
+  audience: mixed
+  outcome: teach
+  duration: 25      # minutes for the talk itself
+
+  slides:
+    - type: title
+      heading: "Stop Polling. Start Listening."
+      subtitle: "What we learned moving 18 teams off request loops"
+      background: midnight
+
+    - type: quote
+      text: "We waited five seconds to learn something that had already happened."
+      source: "Every on-call engineer, at some point"
+
+    - type: agenda
+      auto: true
+
+    - type: divider
+      heading: "The Cost"
+      subtitle: "What polling actually charges you"
+
+    - type: stats
+      heading: "One service, one month"
+      stats:
+        - value: "200k"
+          label: "Requests a day returning nothing"
+        - value: "5s"
+          label: "Worst case staleness"
+        - value: "3"
+          label: "Services writing one table"
+
+    - type: divider
+      heading: "The Change"
+      subtitle: "Small, and less scary than it sounds"
+
+    - type: code
+      heading: "The whole migration, per consumer"
+      language: python
+      code: |
+        # before: every 5 seconds, forever
+        # rows = db.query("SELECT * FROM orders WHERE ...")
+
+        @subscribe("orders.created")
+        def on_order(event):
+            handle(event)
+
+    - type: compare
+      heading: "The dashboard, before and after"
+      before:
+        src: "/deck-library/assets/demo-flame.svg"
+        alt: "Profile dominated by polling queries"
+        label: "Before"
+      after:
+        src: "/deck-library/assets/demo-dashboard.svg"
+        alt: "Latency flat under a second"
+        label: "After"
+      caption: "Same service, same week"
+
+    - type: qa
+      heading: "Demo"
+      subtext: "Five minutes, live, and it will probably break"
+
+    - type: divider
+      heading: "What We Got Wrong"
+      subtitle: "The part other talks leave out"
+
+    - type: bullets
+      heading: "Three mistakes worth avoiding"
+      bullets:
+        - "We migrated the loudest service first"
+        - "Replay was an afterthought"
+        - "Nobody owned the schema for a month"
+
+    - type: cta
+      heading: "Take this home"
+      action: "Pick your quietest service and move it this week"
+      subtext: "Slides, code, and the migration checklist: the link is on the last slide"
+
+    - type: appendix
+      heading: "Backup Slides"
+      subtitle: "For the questions that always come"
+
+    - type: matrix
+      heading: "Queue options we evaluated"
+      columns: ["Kafka", "SQS", "Pub/Sub", "Redis"]
+      rows:
+        - label: "Replay from a point in time"
+          cells: [yes, no, partial, no]
+        - label: "Ordering per key"
+          cells: [yes, partial, yes, no]
+        - label: "Ops burden if self-hosted"
+          cells: ["high", "none", "none", "medium"]
+        - label: "Already in our stack"
+          cells: [no, yes, no, yes]
+
+    - type: bullets
+      heading: "Numbers behind every claim in this talk"
+      bullets:
+        - "200k/day: mean over 30 days, one service"
+        - "5s staleness: p99, measured at the consumer"
+        - "0.8s delivery: p95 end to end, after migration"
+        - "18 teams: 12 migrated, 6 scheduled"
+        - "31% spend: infrastructure only, excludes headcount"
+        - "41 minutes: the one incident during migration"

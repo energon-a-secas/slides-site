@@ -55,6 +55,43 @@ Or open `index.html` directly in a browser.
 | `divider` | Section transition (chapter marker) |
 | `qa` | Planned interaction point |
 | `cta` | Final slide, one clear action |
+| `image` | A screenshot, diagram, or photo |
+| `stats` | Up to 4 big numbers side by side |
+| `timeline` | A step sequence: roadmap, phases, milestones |
+| `columns` | Two columns of free text rather than bullets |
+| `agenda` | What the talk covers, optionally read from the dividers |
+| `table` | A small comparison the audience reads across |
+| `grid` | 2 to 4 parallel points as cards |
+| `media` | A screenshot with a few lines of interpretation beside it |
+| `matrix` | Which option wins: criteria down, options across |
+| `people` | A team, with headshots or generated initials |
+| `checklist` | Status: done, doing, blocked, to do |
+| `compare` | Two images sharing one frame |
+| `appendix` | Ends the talk; slides after it are backup |
+
+---
+
+## Starting points
+
+- **Catalog** (toolbar, or `C`): decks to start from, whole deck structures, every slide type as
+  a live preview, and swatches for gradients, patterns, themes, brand colours and glyphs. Click
+  to insert the YAML or apply the style to the current slide or the whole deck.
+- **[Deck library](deck-library/)**: twelve complete decks to fork, from a daily standup to an
+  incident postmortem. They live as real files in `deck-library/decks/`, so
+  `node validate.mjs deck-library/decks` checks all of them.
+
+---
+
+## Building a deck from the command line
+
+```bash
+npm install js-yaml pptxgenjs @marp-team/marp-cli
+node render-deck.mjs deck.yaml --pptx --pdf --out dist/
+```
+
+PPTX comes from the same serializer the app uses, so the file matches what the browser exports.
+PDF and HTML go through Marp CLI, which needs headless Chrome. `node render-deck.mjs --help`
+lists every flag.
 
 ---
 

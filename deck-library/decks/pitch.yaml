@@ -1,0 +1,43 @@
+presentation:
+  title: "Feature Pitch"
+  subtitle: "[Feature name]"
+  author: "Neorgon"
+
+  slides:
+    - type: title
+      heading: "Feature Pitch"
+      subtitle: "[Feature name]"
+
+    - type: bullets
+      heading: "[Who] cannot [do what] today"
+      bullets:
+        - "[Who] can't [do what]"
+        - "Pain: [quantified impact]"
+        - "Risk of doing nothing: [consequence]"
+
+    - type: bullets
+      heading: "[One sentence: what changes for them]"
+      bullets:
+        - "[One-sentence solution]"
+        - "Key flows: [flow 1], [flow 2]"
+        - "Out of scope: [what we are not doing]"
+
+    - type: split
+      heading: "Impact vs Effort"
+      left:
+        heading: "Impact"
+        bullets:
+          - "[Metric improvement]"
+          - "[User benefit]"
+      right:
+        heading: "Effort"
+        bullets:
+          - "[Team / time]"
+          - "[Dependencies]"
+
+    - type: bullets
+      heading: "[What you want decided, and by when]"
+      bullets:
+        - "Approve direction"
+        - "Assign owner"
+        - "Target: [date]"

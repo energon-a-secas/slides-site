@@ -11,6 +11,7 @@
 //   node validate.mjs -                  # read the deck from stdin
 //   node validate.mjs <dir>              # every deck in a repository (YAML with a presentation: root)
 //   node validate.mjs --fresh [target]   # is this copy of the rules current with the live site?
+//   node validate.mjs --storyline <deck>  # print the headings in order, and nothing else
 //
 // From any other repo, the published copy works standalone:
 //   curl -sO https://slides.neorgon.com/validate.mjs && node validate.mjs deck.yaml
@@ -36,7 +37,10 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 const args = process.argv.slice(2);
 const fresh = args.includes('--fresh');
-const target = args.filter((a) => a !== '--fresh')[0];
+const wantStoryline = args.includes('--storyline');
+/* Any leading dash is a flag, so a new one never has to be added here twice.
+   Filtering only the flags we knew about meant --storyline was read as a path. */
+const target = args.filter((a) => !a.startsWith('--'))[0];
 
 if (!fresh && !target) {
   console.error('usage: node validate.mjs <deck.yaml | dir | -> | --fresh [checkout-dir]');
@@ -128,6 +132,15 @@ function checkDeck(text, label) {
     const where = f.slide ? `slide ${f.slide}` : 'deck';
     console.log(`${tag[f.level] || f.level}  ${where.padEnd(9)} ${f.msg}`);
   }
+  if (wantStoryline) {
+    /* Printed on its own, because reading the headings in order is the test the
+       flow checklist has always asked for and never showed anyone. */
+    console.log(`\n  storyline of ${label}:`);
+    for (const row of parser.storyline(doc.slides)) {
+      console.log(`   ${String(row.n).padStart(2)}. ${row.text}`);
+    }
+    console.log('');
+  }
   const warns = findings.filter((f) => f.level === 'warn').length;
   console.log(`${label}: ${doc.slides.length} slides — ${warns} warning(s), ${findings.length - warns} note(s)`);
   return { unreadable: false, warns };
@@ -170,4 +183,9 @@ for (const [p, text] of decks) {
   unreadable += r.unreadable ? 1 : 0;
 }
 console.log(`\n${decks.length} deck(s) — ${totalWarns} warning(s), ${unreadable} unreadable`);
+/* Say what was NOT checked. These rules are density rules; whether the content
+   physically fits its 960x540 box needs a layout engine, which a CLI does not
+   have. The app measures it in the audit panel's Fit section. Reporting a clean
+   deck without this line implies a completeness the check does not have. */
+console.log('geometry not checked (no DOM): open the deck and run Audit for the measured fit.');
 process.exit(unreadable ? 2 : totalWarns > 0 ? 1 : 0);

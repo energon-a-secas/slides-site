@@ -5,6 +5,8 @@
 import { state, THEMES } from './state.js';
 import { update, initResizeObservers } from './render.js';
 import { initEvents, exposeGlobals } from './events.js';
+import { initCatalog } from './catalog.js';
+import { initOnboarding } from './onboard.js';
 
 // Expose all onclick handlers to the global scope (used by HTML attributes)
 exposeGlobals();
@@ -22,13 +24,17 @@ initResizeObservers();
 
 // Bind keyboard shortcuts and input listener
 initEvents();
+initCatalog();
 
 // Restore saved presentation from localStorage, or load from URL ?yaml=... parameter
 const params = new URLSearchParams(location.search);
 const urlYaml = params.get('yaml');
 if (urlYaml) {
   try {
-    document.getElementById('yaml-input').value = decodeURIComponent(urlYaml);
+    // URLSearchParams.get() has already decoded this. Decoding again threw
+    // URIError on any lone '%', which is why five of the twelve library decks
+    // opened an empty editor: they contain percentages.
+    document.getElementById('yaml-input').value = urlYaml;
     update();
   } catch (e) {
     console.error('Failed to decode YAML from URL', e);
@@ -40,3 +46,6 @@ if (urlYaml) {
     update();
   }
 }
+
+// Last, so it can see whether a deck arrived from the URL or localStorage
+initOnboarding();

@@ -1,0 +1,118 @@
+# Incident postmortem: blameless about people, specific about systems.
+# The timeline is the spine. Everything else hangs off it.
+presentation:
+  title: "Postmortem: Checkout Outage"
+  subtitle: "2026-08-14 · 41 minutes · sev 2"
+  author: "Your Name"
+  date: "2026-08"
+  theme: graphite
+  pattern: grid
+  footer: "Postmortem · INC-2291"
+  classification: "Internal"
+
+  audience: mixed
+  outcome: inform
+  duration: 30      # minutes for the talk itself
+
+  slides:
+    - type: title
+      heading: "Postmortem: Checkout Outage"
+      subtitle: "2026-08-14 · 41 minutes · sev 2"
+
+    - type: agenda
+      auto: true
+
+    - type: stats
+      heading: "Detection took 8 minutes, recovery 41"
+      stats:
+        - value: "41m"
+          label: "Time to recovery"
+        - value: "8m"
+          label: "Time to detect"
+        - value: "2.1%"
+          label: "Checkouts affected"
+
+    - type: divider
+      heading: "A deploy at 14:02 was not rolled back until 14:26"
+      subtitle: "The sequence, without interpretation"
+
+    - type: timeline
+      heading: "Eight minutes to detect, sixteen more to decide"
+      steps:
+        - label: "14:02"
+          text: "Deploy of the pricing service"
+        - label: "14:10"
+          text: "Error rate alert fires"
+        - label: "14:26"
+          text: "Rollback started"
+        - label: "14:43"
+          text: "Checkout recovered"
+
+    - type: divider
+      heading: "No single cause, and no single person could have caught it"
+      subtitle: "Causes, not culprits"
+
+    - type: bullets
+      heading: "Three things had to line up"
+      bullets:
+        - "A config default changed silently"
+        - "Staging had no pricing data to fail on"
+        - "The alert threshold was set for peak traffic"
+      note: "Say plainly that no single person could have caught this"
+
+    - type: qa
+      heading: "Does this match what you saw?"
+      subtext: "Correct the timeline now if anything is off"
+
+    - type: divider
+      heading: "Four actions, each with an owner and a date"
+      subtitle: "Owners and dates, or it did not happen"
+
+    - type: checklist
+      heading: "One action is done, two are moving, one is blocked"
+      items:
+        - label: "Fail the deploy when a config default moves"
+          state: doing
+          note: "platform, this sprint"
+        - label: "Seed staging with real pricing shapes"
+          state: todo
+          note: "data, next sprint"
+        - label: "Alert on rate of change, not absolute rate"
+          state: done
+        - label: "Vendor contract review for the pricing feed"
+          state: blocked
+          note: "waiting on procurement"
+
+    - type: cta
+      heading: "Confirm the two unowned actions before Friday"
+      action: "Confirm the two owners before Friday"
+      subtext: "Unowned actions are how the same incident happens twice"
+
+    - type: appendix
+      heading: "Backup Slides"
+      subtitle: "For the questions that always come"
+
+    - type: matrix
+      heading: "Rollback was the only option that could recover in time"
+      columns: ["Rollback", "Hotfix", "Feature flag"]
+      highlight: 1
+      rows:
+        - label: "Recovery under 15 min"
+          cells: [yes, no, yes]
+        - label: "Keeps the release"
+          cells: [no, yes, yes]
+        - label: "Needed a new deploy"
+          cells: [no, yes, no]
+        - label: "Was actually available"
+          cells: [yes, yes, no]
+      caption: "The flag path did not exist for this service yet"
+
+    - type: bullets
+      heading: "Full alert list during the window"
+      bullets:
+        - "checkout.error_rate, 14:10"
+        - "pricing.latency_p99, 14:11"
+        - "cart.abandon_rate, 14:19"
+        - "checkout.error_rate cleared, 14:43"
+        - "pricing.latency_p99 cleared, 14:44"
+        - "synthetic.checkout passed, 14:47"

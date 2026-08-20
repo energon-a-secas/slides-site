@@ -1,0 +1,90 @@
+# Onboarding week one: written for the joiner, not for the manager.
+# Every day ends with something they have actually done.
+presentation:
+  title: "Welcome to the Platform Team"
+  subtitle: "Your first five days"
+  author: "Your Name"
+  date: "2026-08"
+  theme: azure
+  footer: "Onboarding · Platform"
+
+  audience: learner
+  outcome: teach
+  duration: 30      # minutes for the talk itself
+
+  slides:
+    - type: title
+      heading: "Welcome to the Platform Team"
+      subtitle: "Your first five days"
+
+    - type: agenda
+      auto: true
+      current: 1
+
+    - type: divider
+      heading: "Day One"
+      subtitle: "Access, and one person to ask"
+
+    - type: checklist
+      heading: "Access first, then say hello"
+      items:
+        - label: "Laptop, VPN, and the shared drive"
+          state: done
+          note: "IT does this before you arrive"
+        - label: "Repo access and a first clone"
+          state: doing
+        - label: "Say hello in the team channel"
+          state: todo
+        - label: "Coffee with your onboarding buddy"
+          state: todo
+
+    - type: people
+      heading: "Four people cover everything you will hit"
+      columns: 4
+      people:
+        - name: "Jane Smith"
+          role: "Team lead · anything blocking"
+        - name: "Alex Kim"
+          role: "Data · pipelines and schemas"
+        - name: "Sam Ortiz"
+          role: "Design · the component kit"
+        - name: "Riley Chen"
+          role: "Your onboarding buddy"
+
+    - type: divider
+      heading: "Days Two to Four"
+      subtitle: "Read less, run more"
+
+    - type: grid
+      heading: "The three systems you will touch first"
+      columns: 3
+      items:
+        - icon: "◆"
+          heading: "Ingest"
+          text: "Where events arrive and get validated"
+        - icon: "▲"
+          heading: "Pricing"
+          text: "The service most incidents start in"
+        - icon: "●"
+          heading: "Console"
+          text: "What support uses all day"
+
+    - type: qa
+      heading: "Stuck on anything yet?"
+      subtext: "Asking on day two is expected, not a bad sign"
+
+    - type: divider
+      heading: "Day Five"
+      subtitle: "Ship something small"
+
+    - type: bullets
+      heading: "Your first change ships with your buddy watching"
+      bullets:
+        - "Pick a good-first-issue from the board"
+        - "Pair with your buddy on the review"
+        - "Deploy it yourself, with someone watching"
+
+    - type: cta
+      heading: "By Friday"
+      action: "Open your first pull request"
+      subtext: "Small and boring is the right size for week one"

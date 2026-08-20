@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="color-scheme" content="dark">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.neorgon.org; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://cdn.neorgon.org; connect-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.neorgon.org; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self'; upgrade-insecure-requests">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <title>Deck Library | Presentation Sage</title>
@@ -33,7 +33,8 @@
     .template-card:hover { border-color: rgba(176,21,176,.35); background: rgba(255,255,255,.05); }
     .template-category { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; background: rgba(176,21,176,.12); color: var(--accent); border: 1px solid rgba(176,21,176,.2); margin-bottom: 12px; }
     .template-name { font-size: 1.35rem; font-weight: 600; margin-bottom: 8px; }
-    .template-desc { color: var(--text-secondary); font-size: .95rem; line-height: 1.5; margin-bottom: 20px; }
+    .template-desc { color: var(--text-secondary); font-size: .95rem; line-height: 1.5; margin-bottom: 10px; }
+    .template-uses { color: var(--text-dim, #6b7280); font-size: .78rem; line-height: 1.5; margin-bottom: 18px; font-family: var(--mono, monospace); }
     .template-actions { display: flex; gap: 12px; flex-wrap: wrap; }
     .template-btn { flex: 1; min-width: 120px; padding: 10px 16px; border-radius: 8px; text-align: center; text-decoration: none; font-weight: 600; font-size: .9rem; border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--text-secondary); }
     .template-btn:hover { background: rgba(176,21,176,.12); border-color: rgba(176,21,176,.35); color: var(--text-primary); }
@@ -62,34 +63,64 @@
   </div>
 
   <script>
-    const templates = [
-      {
-        id: 'standup',
-        category: 'Team',
-        name: 'Daily Standup',
-        desc: 'A tight 5-minute update deck: wins, blockers, and focus for the day.',
-        yaml: `presentation:\n  title: "Daily Standup"\n  subtitle: "Quick team sync"\n  author: "Neorgon"\n\n  slides:\n    - type: title\n      heading: "Daily Standup"\n      subtitle: "Quick team sync"\n\n    - type: bullets\n      heading: "Yesterday"\n      bullets:\n        - "Shipped: [your win]"\n        - "Merged: [PR / change]"\n        - "Learned: [insight]"\n\n    - type: bullets\n      heading: "Today"\n      bullets:\n        - "Focus: [top priority]"\n        - "Review: [PR / doc]"\n        - "Meet: [sync]"\n\n    - type: bullets\n      heading: "Blockers"\n      bullets:\n        - "None"\n        - "Need help with: [blocker]"\n`
-      },
-      {
-        id: 'pitch',
-        category: 'Product',
-        name: 'Feature Pitch',
-        desc: 'Sell a feature idea in 5 slides: problem, solution, impact, and ask.',
-        yaml: `presentation:\n  title: "Feature Pitch"\n  subtitle: "[Feature name]"\n  author: "Neorgon"\n\n  slides:\n    - type: title\n      heading: "Feature Pitch"\n      subtitle: "[Feature name]"\n\n    - type: bullets\n      heading: "Problem"\n      bullets:\n        - "[Who] can't [do what]"\n        - "Pain: [quantified impact]"\n        - "Risk of doing nothing: [consequence]"\n\n    - type: bullets\n      heading: "Solution"\n      bullets:\n        - "[One-sentence solution]"\n        - "Key flows: [flow 1], [flow 2]"\n        - "Out of scope: [what we are not doing]"\n\n    - type: split\n      heading: "Impact vs Effort"\n      left:\n        heading: "Impact"\n        bullets:\n          - "[Metric improvement]"\n          - "[User benefit]"\n      right:\n        heading: "Effort"\n        bullets:\n          - "[Team / time]"\n          - "[Dependencies]"\n\n    - type: bullets\n      heading: "Ask"\n      bullets:\n        - "Approve direction"\n        - "Assign owner"\n        - "Target: [date]"\n`
-      },
-      {
-        id: 'retro',
-        category: 'Team',
-        name: 'Sprint Retro',
-        desc: 'A balanced retrospective format: keep, stop, start, and actions.',
-        yaml: `presentation:\n  title: "Sprint Retro"\n  subtitle: "Sprint [N] — [Team]"\n  author: "Neorgon"\n\n  slides:\n    - type: title\n      heading: "Sprint Retro"\n      subtitle: "Sprint [N] — [Team]"\n\n    - type: bullets\n      heading: "What Went Well"\n      bullets:\n        - "[Win 1]"\n        - "[Win 2]"\n        - "[Win 3]"\n\n    - type: bullets\n      heading: "What Slowed Us Down"\n      bullets:\n        - "[Friction 1]"\n        - "[Friction 2]"\n\n    - type: bullets\n      heading: "What We Will Try Next"\n      bullets:\n        - "[Experiment 1]"\n        - "[Experiment 2]"\n\n    - type: bullets\n      heading: "Action Items"\n      bullets:\n        - "[Action] — @owner — due [date]"\n        - "[Action] — @owner — due [date]"\n`
-      }
-    ];
+    /* Decks live as real .yaml files under decks/, so `node validate.mjs
+       deck-library/decks` checks every example the library hands out. The page
+       only knows the manifest; the content is fetched. */
+    /* The manifest is shared with the player's Catalog, so the two lists
+       cannot disagree about what the library holds. */
+    let templates = [];
 
     const grid = document.getElementById('templateGrid');
-    templates.forEach(t => {
-      const encoded = encodeURIComponent(t.yaml);
-      grid.innerHTML += `\n        <article class="template-card">\n          <span class="template-category">${t.category}</span>\n          <h2 class="template-name">${t.name}</h2>\n          <p class="template-desc">${t.desc}</p>\n          <div class="template-actions">\n            <a class="template-btn template-btn--primary" href="../?yaml=${encoded}" target="_blank" rel="noopener">Open in Presentation Sage</a>\n            <a class="template-btn" href="data:text/yaml;base64,${btoa(unescape(encodeURIComponent(t.yaml)))}" download="${t.id}.yaml">Download YAML</a>\n          </div>\n        </article>`;
+    const render = () => { grid.innerHTML = templates.map(t => `
+        <article class="template-card" data-id="${t.id}">
+          <span class="template-category">${t.category}</span>
+          <h2 class="template-name">${t.name}</h2>
+          <p class="template-desc">${t.desc}</p>
+          <p class="template-uses">${t.uses}</p>
+          <div class="template-actions">
+            <a class="template-btn template-btn--primary" data-open href="#">Open in Presentation Sage</a>
+            <a class="template-btn" href="decks/${t.id}.yaml" download="${t.id}.yaml">Download YAML</a>
+            <button class="template-btn" data-copy type="button">Copy YAML</button>
+          </div>
+        </article>`).join(''); };
+
+    fetch('decks/index.json')
+      .then(r => r.json())
+      .then(list => { templates = list; render(); })
+      .catch(() => { grid.innerHTML = '<p class="template-desc">Deck list unavailable.</p>'; });
+
+    const yamlFor = async (id) => (await fetch(`decks/${id}.yaml`)).text();
+
+    grid.addEventListener('click', async (e) => {
+      const card = e.target.closest('.template-card');
+      if (!card) return;
+      const id = card.dataset.id;
+
+      if (e.target.matches('[data-open]')) {
+        e.preventDefault();
+        const yaml = await yamlFor(id);
+        window.open(`../?yaml=${encodeURIComponent(yaml)}`, '_blank', 'noopener');
+      }
+
+      if (e.target.matches('[data-copy]')) {
+        const yaml = await yamlFor(id);
+        const btn = e.target, was = btn.dataset.label || btn.textContent;
+        btn.dataset.label = was;
+        let ok = true;
+        try {
+          await navigator.clipboard.writeText(yaml);
+        } catch {
+          // Clipboard API needs permission the page may not have; the old
+          // textarea trick still works and needs none.
+          const ta = document.createElement('textarea');
+          ta.value = yaml; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select();
+          ok = document.execCommand('copy');
+          ta.remove();
+        }
+        btn.textContent = ok ? 'Copied' : 'Press Ctrl+C';
+        setTimeout(() => { btn.textContent = was; }, 1400);
+      }
     });
   </script>
 </body>

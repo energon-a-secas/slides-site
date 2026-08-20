@@ -16,6 +16,8 @@ presentation:
   # logo_stamp_size: 44   # bigger stamp on the other slides (px height, 12–120)
   # brand:                # brand colors override the theme — decks for one brand stay consistent
   #   accent: "#e50914"
+  # footer: "Team · Q3"   # deck note on the bottom rail of every non-title slide
+  # classification: "Internal"  # handling label, sits beside the page count
 
   slides:
 
@@ -23,6 +25,10 @@ presentation:
     - type: title
       heading: "Your Presentation Title"
       subtitle: "A short subtitle that frames the talk"
+
+    # ── Agenda (auto reads the divider headings below, so it cannot drift) ───
+    - type: agenda
+      auto: true
 
     # ── Context / problem (1 slide — make the pain real) ─────────────────────
     - type: bullets
@@ -72,6 +78,47 @@ presentation:
       code: |
         # Show only the part that matters
         result = do_the_thing(input)
+
+    # ── Section break ─────────────────────────────────────────────────────────
+    - type: divider
+      heading: "What It Costs"
+      subtitle: "The trade-off, stated plainly"
+
+    # ── Options the audience will read across (≤6 columns, ≤8 rows) ──────────
+    - type: table
+      heading: "What each option costs"
+      columns: ["Option", "Cost", "Risk"]
+      align: [left, right, center]
+      highlight: 2          # the row you are recommending
+      rows:
+        - ["Keep as is", "$0", "High"]
+        - ["Rebuild", "$40k", "Low"]
+      caption: "Where the numbers came from"
+
+    # ── 2 to 4 parallel points that are not a sequence ───────────────────────
+    - type: grid
+      heading: "Three things this buys you"
+      columns: 3
+      items:
+        - icon: "◆"
+          heading: "First"
+          text: "What it means in practice"
+        - icon: "▲"
+          heading: "Second"
+          text: "What it means in practice"
+        - icon: "●"
+          heading: "Third"
+          text: "What it means in practice"
+
+    # ── A screenshot that needs interpreting (omit src for a placeholder) ────
+    - type: media
+      heading: "What it looks like"
+      # src: "./screenshot.png"   # add it and the placeholder frame is replaced
+      alt: "Description for the reader who cannot see it"
+      side: right
+      bullets:
+        - "Point at the thing that changed"
+        - "Say why it matters"
 
     # ── Supporting quote or principle ─────────────────────────────────────────
     - type: quote

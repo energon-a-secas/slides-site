@@ -1,0 +1,97 @@
+# Technical design review: an engineer walking peers through a change.
+# The code slide is the point of the deck; everything else sets it up.
+presentation:
+  title: "Design Review: Event-Driven Ingest"
+  subtitle: "Replacing the polling loop"
+  author: "Your Name"
+  date: "2026-08"
+  theme: neorgon
+  pattern: dots
+  footer: "Design review · #RFC-114"
+  logo: "/deck-library/assets/demo-logo.svg"   # swap for your own mark
+  logo_all: true              # stamps it on every non-title slide
+  logo_pos: bottom-left
+
+  audience: engineering
+  big_idea: "Replacing the polling loop with an event subscription cuts 200k daily requests and removes the shared table, at the cost of one shadow phase."
+  outcome: approve
+  duration: 30      # minutes for the talk itself
+
+  slides:
+    - type: title
+      heading: "Design Review: Event-Driven Ingest"
+      subtitle: "Replacing the polling loop"
+
+    - type: quote
+      text: "Replace the polling loop with an event subscription."
+      source: "What this review is asking you to approve"
+
+    - type: agenda
+      auto: true
+
+    - type: divider
+      heading: "Polling is costing more than anyone budgeted"
+      subtitle: "What the current design costs us"
+
+    - type: bullets
+      heading: "Polling costs more than it looks"
+      bullets:
+        - "200k requests a day, most returning nothing"
+        - "Up to 5s of latency before a change is seen"
+        - "Three services writing one table"
+      note: "Have the cost number ready per month, someone always asks"
+
+    - type: split
+      heading: "Coupling moves from the shared table to each queue"
+      left:
+        heading: "Now"
+        bullets:
+          - "Services coupled through the database"
+          - "New consumer means new polling job"
+      right:
+        heading: "Proposed"
+        bullets:
+          - "Services own their queue only"
+          - "New consumer subscribes and is done"
+
+    - type: divider
+      heading: "One subscribe call replaces the polling loop"
+      subtitle: "How it actually works"
+
+    - type: code
+      heading: "Publishing is three lines and one topic name"
+      language: python
+      code: |
+        producer.send(
+            topic="orders.created",
+            key=order.id,
+            value=order.as_event(),
+        )
+
+    - type: media
+      heading: "Lag stays flat under a burst"
+      src: "/deck-library/assets/demo-dashboard.svg"   # replace with your own screenshot
+      alt: "Dashboard showing delivery latency under a second"
+      side: right
+      bullets:
+        - "Lag stays flat under a burst"
+        - "Replay is a seek, not a backfill"
+
+    - type: timeline
+      heading: "Both paths run until one consumer moves at a time"
+      steps:
+        - label: "Shadow"
+          text: "Both paths run, nothing switches"
+        - label: "Cut over"
+          text: "One consumer at a time"
+        - label: "Remove"
+          text: "Polling job deleted"
+
+    - type: qa
+      heading: "Where would this break?"
+      subtext: "Looking for the failure mode I have not thought of"
+
+    - type: cta
+      heading: "Approve the shadow phase"
+      action: "Approve the shadow phase"
+      subtext: "No traffic moves until the numbers match for a week"

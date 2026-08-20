@@ -4,6 +4,8 @@
 
 import { state, THEMES } from './state.js';
 import { showToast } from './utils.js';
+/* Late-bound to avoid an import cycle: catalog.js imports from this module. */
+const openCatalogFromEvents = (tab) => window.openCatalog?.(tab);
 import { showSlide, updateCounter, syncFilmstrip, renderFilmstrip, update } from './render.js';
 import { openFullscreen, closeFullscreen, fsPrev, fsNext,
          openGrid, closeGrid,
@@ -56,7 +58,7 @@ export function setTheme(name) {
 
 /* ── Insert-slide dropdown ────────────────────────────────────────────── */
 
-const SLIDE_SKELETONS = {
+export const SLIDE_SKELETONS = {
   title:    '\n    - type: title\n      heading: "Slide Title"\n      subtitle: "Subtitle"\n',
   bullets:  '\n    - type: bullets\n      heading: "Heading"\n      bullets:\n        - "Point one"\n        - "Point two"\n        - "Point three"\n',
   split:    '\n    - type: split\n      heading: "Comparison"\n      left:\n        heading: "Option A"\n        bullets:\n          - "Detail"\n      right:\n        heading: "Option B"\n        bullets:\n          - "Detail"\n',
@@ -69,22 +71,23 @@ const SLIDE_SKELETONS = {
   stats:    '\n    - type: stats\n      heading: "Key Metrics"\n      stats:\n        - value: "42%"\n          label: "First metric"\n        - value: "3x"\n          label: "Second metric"\n',
   timeline: '\n    - type: timeline\n      heading: "Roadmap"\n      steps:\n        - label: "Phase 1"\n          text: "Description"\n        - label: "Phase 2"\n          text: "Description"\n',
   columns:  '\n    - type: columns\n      heading: "Two Perspectives"\n      left:\n        heading: "Left"\n        text: "Paragraph text..."\n      right:\n        heading: "Right"\n        text: "Paragraph text..."\n',
+  agenda:   '\n    - type: agenda\n      heading: "Agenda"\n      auto: true\n',
+  table:    '\n    - type: table\n      heading: "Comparison"\n      columns: ["Option", "Cost", "Risk"]\n      rows:\n        - ["Keep as is", "$0", "High"]\n        - ["Rebuild", "$40k", "Low"]\n      caption: "Optional caption"\n',
+  grid:     '\n    - type: grid\n      heading: "Three Points"\n      columns: 3\n      items:\n        - heading: "First"\n          text: "What it means"\n        - heading: "Second"\n          text: "What it means"\n        - heading: "Third"\n          text: "What it means"\n',
+  media:    '\n    - type: media\n      heading: "What you are looking at"\n      src: "./screenshot.png"\n      alt: "Description"\n      side: right\n      bullets:\n        - "Point one"\n        - "Point two"\n',
+  matrix:    '\n    - type: matrix\n      heading: "Which option"\n      columns: ["Keep", "Rebuild", "Patch"]\n      highlight: 2\n      rows:\n        - label: "Runs offline"\n          cells: [no, yes, partial]\n        - label: "Cost"\n          cells: ["$0", "$40k", "$8k"]\n',
+  people:    '\n    - type: people\n      heading: "The team"\n      columns: 3\n      people:\n        - name: "Jane Smith"\n          role: "Platform lead"\n        - name: "Alex Kim"\n          role: "Data"\n        - name: "Sam Ortiz"\n          role: "Design"\n',
+  checklist: '\n    - type: checklist\n      heading: "Launch readiness"\n      items:\n        - label: "Runbook written"\n          state: done\n        - label: "Load test"\n          state: doing\n        - label: "Vendor sign-off"\n          state: blocked\n          note: "waiting on legal"\n',
+  compare:   '\n    - type: compare\n      heading: "Before and after"\n      before:\n        src: "./before.png"\n        alt: "The old screen"\n      after:\n        src: "./after.png"\n        alt: "The new screen"\n      caption: "Optional caption"\n',
+  appendix:  '\n    - type: appendix\n      heading: "Backup Slides"\n      subtitle: "Answers held in reserve"\n',
 };
 
-export function toggleInsertMenu() {
-  document.getElementById('insert-menu').classList.toggle('open');
-}
-
+/* The `+ Slide` dropdown was replaced by the Catalog's Slides tab. These two
+   remain only because `exposeGlobals()` still publishes them; both referenced
+   #insert-menu, which no longer exists, so calling either threw. */
 export function insertSlide(type) {
-  const ta = document.getElementById('yaml-input');
-  const skeleton = SLIDE_SKELETONS[type] || SLIDE_SKELETONS.bullets;
-  const pos = ta.selectionStart;
-  const val = ta.value;
-  ta.value = val.slice(0, pos) + skeleton + val.slice(pos);
-  ta.selectionStart = ta.selectionEnd = pos + skeleton.length;
-  ta.focus();
-  document.getElementById('insert-menu').classList.remove('open');
-  update();
+  openCatalogFromEvents('slides');
+  console.info(`insertSlide(${type}) is superseded by the Catalog's Slides tab.`);
 }
 
 /* ── Logo from a local file ───────────────────────────────────────────── */
@@ -127,105 +130,40 @@ export function onLogoFile(e) {
 
 /* ── Sample deck ──────────────────────────────────────────────────────── */
 
-export function loadSample() {
-  document.getElementById('yaml-input').value = `presentation:
-  title: "Why We're Switching to Event-Driven Architecture"
-  subtitle: "From polling chaos to reactive clarity"
-  author: "Luciano"
-  date: "2026-03"
-  # theme: royal          # optional deck-wide look — see the Theme dropdown for names
+/* The starter deck is a library file, not a string kept here. Two copies of
+   "the example" drift, and the one in the source always loses. */
+export const STARTER_DECK = 'deck-library/decks/design-review.yaml';
 
-  slides:
-    - type: title
-      heading: "Why We're Switching to Event-Driven Architecture"
-      subtitle: "From polling chaos to reactive clarity"
-
-    - type: bullets
-      heading: "The Problem"
-      bullets:
-        - "API polling every 5s \u2014 **200k unnecessary requests/day**"
-        - "Race conditions causing \`data inconsistencies\`"
-        - "3 services sharing a DB table they shouldn't touch"
-      note: "Emphasize the cost: each unnecessary request costs compute and adds latency"
-
-    - type: split
-      heading: "Before vs After"
-      left:
-        heading: "Now (REST polling)"
-        bullets:
-          - "Tight coupling between services"
-          - "Hard to add new consumers"
-          - "High DB load at peak"
-      right:
-        heading: "Target (Event-driven)"
-        bullets:
-          - "Services only know their own queue"
-          - "New consumer = subscribe, done"
-          - "Load distributed naturally"
-      note: "Pause here \u2014 ask if anyone has questions about the current architecture"
-
-    - type: code
-      heading: "Producing an event (Kafka)"
-      language: python
-      code: |
-        producer.send(
-          topic="order.created",
-          value={"order_id": 123, "user_id": 456}
-        )
-
-    - type: quote
-      text: "Make each service responsible for one thing and let events connect them."
-      source: "Team architecture principle"
-
-    - type: qa
-      heading: "Does this change affect you?"
-      subtext: "Let's make sure every team's use case is covered"
-
-    - type: divider
-      heading: "Migration Plan"
-      subtitle: "How we get from here to there"
-
-    - type: bullets
-      heading: "Phase 1 \u2014 Strangler fig (Week 1\u20132)"
-      bullets:
-        - "Identify the 3 highest-volume polling endpoints"
-        - "Add Kafka producer alongside existing REST call"
-        - "No consumer changes yet \u2014 just emit"
-      note: "The strangler fig pattern lets us migrate incrementally without a big bang cutover"
-
-    - type: stats
-      heading: "Expected Impact"
-      background: ocean
-      stats:
-        - value: "-80%"
-          label: "API requests"
-        - value: "$12k"
-          label: "Monthly savings"
-        - value: "3x"
-          label: "Faster scaling"
-
-    - type: timeline
-      heading: "Rollout Plan"
-      steps:
-        - label: "Week 1-2"
-          text: "Add Kafka producers"
-        - label: "Week 3-4"
-          text: "Migrate consumers"
-        - label: "Week 5"
-          text: "Remove polling"
-        - label: "Week 6"
-          text: "Monitor & tune"
-
-    - type: cta
-      heading: "Next Step"
-      action: "Review the RFC in Confluence by Friday"
-      subtext: "Link in Slack #architecture \u2014 comments welcome"
-`;
-  state.current = 0;
-  update();
+export async function loadSample(path = STARTER_DECK) {
+  const ta = document.getElementById('yaml-input');
+  try {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error(`${res.status}`);
+    ta.value = await res.text();
+    update();
+    showToast('Sample deck loaded');
+  } catch (e) {
+    showToast('Could not load the sample deck');
+    console.error('loadSample', e);
+  }
 }
 
 /* ── Keyboard shortcuts ───────────────────────────────────────────────── */
+
+/* A global single-key shortcut must not fire while the user is typing, and must
+   not fire while an overlay owns the screen. Checking the one textarea by
+   identity missed every <input>, which is why typing a URL with a 'g' in it
+   into the Gallery opened the Overview, and arrowing the theme <select> also
+   advanced the slide. */
+export function typingOrOverlaid(yamlInput) {
+  const el = document.activeElement;
+  const tag = (el?.tagName || '').toLowerCase();
+  if (el === yamlInput) return true;
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+  if (el?.isContentEditable) return true;
+  return ['pres-overlay', 'grid-overlay', 'gallery-overlay', 'cat-overlay']
+    .some(id => document.getElementById(id)?.classList.contains('active'));
+}
 
 export function initEvents() {
   const yamlInput = document.getElementById('yaml-input');
@@ -234,7 +172,22 @@ export function initEvents() {
 
   // Tab / Shift+Tab → indent / dedent for YAML
   yamlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      // Arms one Tab press to leave the editor instead of indenting.
+      yamlInput.dataset.tabOut = '1';
+      showToast('Tab now moves focus out of the editor');
+      return;
+    }
+
     if (e.key !== 'Tab') return;
+    /* Escape then Tab is the standard way out of a textarea that owns Tab, and
+       without it this was a WCAG 2.1.2 keyboard trap: every control after the
+       editor in DOM order, which is the whole preview side, was unreachable.
+       `tabOut` is armed by the Escape handler below. */
+    if (yamlInput.dataset.tabOut === '1') {
+      delete yamlInput.dataset.tabOut;
+      return;                       // let the browser move focus normally
+    }
     e.preventDefault();
     const start = yamlInput.selectionStart;
     const end = yamlInput.selectionEnd;
@@ -255,19 +208,38 @@ export function initEvents() {
     debouncedUpdate();
   });
 
-  // Close insert menu on outside click
+  /* Toolbar dropdowns. One delegated handler covers every menu, so adding a
+     group to the toolbar needs no JS at all. */
   document.addEventListener('click', (e) => {
-    const menu = document.getElementById('insert-menu');
-    const btn = document.getElementById('insert-slide-btn');
-    if (!menu.contains(e.target) && e.target !== btn) {
-      menu.classList.remove('open');
+    const toggle = e.target.closest('[data-menu-toggle]');
+    const wrap = toggle?.closest('.tb-menu');
+    document.querySelectorAll('.tb-menu.open').forEach(m => {
+      if (m !== wrap) {
+        m.classList.remove('open');
+        m.querySelector('[data-menu-toggle]')?.setAttribute('aria-expanded', 'false');
+      }
+    });
+    if (wrap) {
+      const open = wrap.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(open));
+      return;
     }
+    // A click inside a menu list runs the action, then closes the menu
+    e.target.closest('.tb-menu-list') && wrapClose();
   });
+
+  function wrapClose() {
+    document.querySelectorAll('.tb-menu.open').forEach(m => {
+      m.classList.remove('open');
+      m.querySelector('[data-menu-toggle]')?.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') wrapClose(); });
 
   // Editor arrow keys
   document.addEventListener('keydown', (e) => {
-    const inEditor = document.activeElement === yamlInput;
-    if (inEditor) return;
+    if (typingOrOverlaid(yamlInput)) return;
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
     if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevSlide();
   });
@@ -295,10 +267,7 @@ export function initEvents() {
 
   // Global shortcuts: G = grid, F = fullscreen present
   document.addEventListener('keydown', (e) => {
-    const inEditor = document.activeElement === yamlInput;
-    const inPres   = document.getElementById('pres-overlay').classList.contains('active');
-    const inGrid   = document.getElementById('grid-overlay').classList.contains('active');
-    if (inEditor || inPres || inGrid) return;
+    if (typingOrOverlaid(yamlInput)) return;
     if (e.key === 'g' || e.key === 'G') openGrid();
     if (e.key === 'f' || e.key === 'F') openPresenter();
   });
@@ -343,6 +312,5 @@ export function exposeGlobals() {
   window.closePresenter  = closePresenter;
   window.pressPrev       = pressPrev;
   window.pressNext       = pressNext;
-  window.toggleInsertMenu = toggleInsertMenu;
   window.insertSlide     = insertSlide;
 }

@@ -77,11 +77,17 @@ function buildRevealHTML(meta, slides, themeName) {
 </section>`;
 
       case 'divider': {
-        const divBg = bgVal || `linear-gradient(135deg, rgba(176,21,176,.12) 0%, rgba(61,0,128,.12) 50%, ${t.bg} 100%)`;
-        return `<section data-background="${divBg}">
-  <h1 style="font-size:2.4em;font-weight:700;color:${t.text}">${esc(slide.heading || '')}</h1>
+        const total = slides.filter(s2 => (s2.type || 'bullets') === 'divider').length;
+        let k = 0;
+        slides.some(s2 => { if ((s2.type || 'bullets') === 'divider') k++; return s2 === slide; });
+        const eyebrow = (total > 1 && slide.progress !== false)
+          ? `<div style="font-size:0.5em;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:${t.accent};margin-bottom:10px">Section ${k} of ${total}</div>`
+          : '';
+        return `<section ${bgAttr}>
+  ${eyebrow}
+  <h1 style="font-size:2em;font-weight:700;color:${t.text}">${esc(slide.heading || '')}</h1>
   <div style="width:48px;height:4px;border-radius:2px;background:${t.accent};margin:18px auto"></div>
-  ${slide.subtitle ? `<p style="font-size:0.85em;color:${t.muted};margin-top:12px">${esc(slide.subtitle)}</p>` : ''}
+  ${slide.subtitle ? `<p style="font-size:0.75em;color:${t.muted}">${esc(slide.subtitle)}</p>` : ''}
   ${note}
 </section>`;
       }
@@ -147,6 +153,167 @@ function buildRevealHTML(meta, slides, themeName) {
   ${note}
 </section>`;
 
+      case 'agenda': {
+        const items = (slide.items && slide.items.length)
+          ? slide.items
+          : (slide.auto ? slides.filter(s2 => (s2.type || 'bullets') === 'divider').map(s2 => s2.heading || '') : []);
+        const cur = typeof slide.current === 'number' ? slide.current : 0;
+        return `<section ${bgAttr}>
+  <h2 style="font-size:1.5em;font-weight:700;color:${t.text};border-bottom:1px solid ${t.border};padding-bottom:14px">${esc(slide.heading || 'Agenda')}</h2>
+  <ol style="list-style:none;padding:0;margin-top:20px;text-align:left">
+    ${items.map((it, i) => {
+      const label = typeof it === 'string' ? it : (it?.label || '');
+      const text  = typeof it === 'string' ? '' : (it?.text || '');
+      const on = i + 1 === cur;
+      return `<li style="display:flex;gap:14px;padding:9px 0;border-bottom:1px solid ${t.border}">
+      <span style="font-family:monospace;font-size:0.6em;font-weight:700;color:${t.accent}">${String(i + 1).padStart(2, '0')}</span>
+      <span style="font-size:0.8em;color:${on ? t.text : t.ts};font-weight:${on ? 700 : 400}">${esc(label)}${text ? `<br><span style="font-size:0.7em;color:${t.muted}">${esc(text)}</span>` : ''}</span>
+    </li>`;
+    }).join('\n    ')}
+  </ol>
+  ${note}
+</section>`;
+      }
+
+      case 'table': {
+        const cols = slide.columns || [];
+        const rows = slide.rows || [];
+        return `<section ${bgAttr}>
+  ${slide.heading ? `<h2 style="font-size:1.4em;font-weight:700;color:${t.text};margin-bottom:14px">${esc(slide.heading)}</h2>` : ''}
+  <table style="width:100%;border-collapse:collapse;font-size:${rows.length > 6 ? '0.5em' : '0.6em'};color:${t.ts}">
+    ${cols.length ? `<thead><tr>${cols.map(c => `<th style="text-align:left;padding:8px 12px;background:${t.accent};color:${t.onAccent || '#fff'};font-size:0.9em;text-transform:uppercase;letter-spacing:0.6px">${esc(String(c))}</th>`).join('')}</tr></thead>` : ''}
+    <tbody>
+    ${rows.map((r, ri) => `<tr style="${ri + 1 === slide.highlight ? `color:${t.text};font-weight:700;` : ''}background:${ri % 2 ? 'rgba(127,127,127,.06)' : 'transparent'}">${(Array.isArray(r) ? r : [r]).map(c => `<td style="padding:7px 12px;border-bottom:1px solid ${t.border}">${esc(String(c ?? ''))}</td>`).join('')}</tr>`).join('\n    ')}
+    </tbody>
+  </table>
+  ${slide.caption ? `<p style="font-size:0.5em;color:${t.muted};margin-top:10px;text-align:left">${esc(slide.caption)}</p>` : ''}
+  ${note}
+</section>`;
+      }
+
+      case 'grid': {
+        const items = slide.items || [];
+        const n = [2, 3, 4].includes(slide.columns) ? slide.columns : Math.min(Math.max(items.length, 2), 4);
+        return `<section ${bgAttr}>
+  ${slide.heading ? `<h2 style="font-size:1.5em;font-weight:700;color:${t.text};border-bottom:1px solid ${t.border};padding-bottom:14px">${esc(slide.heading)}</h2>` : ''}
+  <div style="display:grid;grid-template-columns:repeat(${n},1fr);gap:18px;margin-top:20px;text-align:left">
+    ${items.map(it => `<div style="${slide.style === 'plain'
+      ? `border-left:2px solid ${t.accent};padding:2px 0 2px 14px`
+      : `background:rgba(127,127,127,.08);border:1px solid ${t.border};border-top:2px solid ${t.accent};border-radius:6px;padding:14px 16px`}">
+      ${it?.icon ? `<div style="font-size:1em;margin-bottom:8px">${esc(it.icon)}</div>` : ''}
+      ${it?.heading ? `<div style="font-size:0.7em;font-weight:700;color:${t.accent};margin-bottom:6px">${esc(it.heading)}</div>` : ''}
+      ${it?.text ? `<div style="font-size:0.62em;color:${t.ts};line-height:1.45">${esc(it.text)}</div>` : ''}
+      ${(it?.bullets || []).length ? `<ul style="font-size:0.58em;color:${t.ts};margin-top:6px;padding-left:16px">${(it.bullets || []).map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}
+    </div>`).join('\n    ')}
+  </div>
+  ${note}
+</section>`;
+      }
+
+      case 'media': {
+        const left = slide.side === 'left';
+        const figure = slide.src
+          ? `<img src="${esc(slide.src)}" alt="${esc(slide.alt || '')}" style="width:100%;height:100%;object-fit:${slide.fit === 'contain' ? 'contain' : 'cover'}">`
+          : `<div style="width:100%;height:60vh;display:flex;align-items:center;justify-content:center;border:1px dashed ${t.dim};color:${t.muted};font-size:0.6em">${esc(slide.alt || slide.caption || 'Media')}</div>`;
+        const copy = `<div style="flex:1;text-align:left">
+      ${slide.heading ? `<h2 style="font-size:1.2em;font-weight:700;color:${t.text}">${esc(slide.heading)}</h2>` : ''}
+      ${slide.subtitle ? `<p style="font-size:0.62em;color:${t.accent};text-transform:uppercase;letter-spacing:0.6px">${esc(slide.subtitle)}</p>` : ''}
+      ${(slide.bullets || []).length
+        ? `<ul style="font-size:0.68em;color:${t.ts};line-height:1.55;padding-left:18px;margin-top:14px">${(slide.bullets || []).map(b => `<li>${esc(b)}</li>`).join('')}</ul>`
+        : (slide.text ? `<p style="font-size:0.68em;color:${t.ts};line-height:1.55;margin-top:14px">${esc(slide.text)}</p>` : '')}
+      ${slide.caption ? `<p style="font-size:0.5em;color:${t.muted};margin-top:14px">${esc(slide.caption)}</p>` : ''}
+    </div>`;
+        const fig = `<div style="flex:1.3;min-width:0">${figure}</div>`;
+        return `<section ${bgAttr}>
+  <div style="display:flex;gap:34px;align-items:center">
+    ${left ? fig + '\n    ' + copy : copy + '\n    ' + fig}
+  </div>
+  ${note}
+</section>`;
+      }
+
+      case 'matrix': {
+        const cols = slide.columns || [];
+        const mark = (v) => v === true ? '✓' : v === false ? '✕'
+          : ({ yes: '✓', no: '✕', partial: '–' })[String(v).toLowerCase()] ?? esc(String(v ?? ''));
+        return `<section ${bgAttr}>
+  ${slide.heading ? `<h2 style="font-size:1.4em;font-weight:700;color:${t.text};margin-bottom:14px">${esc(slide.heading)}</h2>` : ''}
+  <table style="width:100%;border-collapse:collapse;font-size:0.6em;color:${t.ts}">
+    <thead><tr><th></th>${cols.map(c => `<th style="padding:8px 12px;background:${t.accent};color:${t.onAccent || '#fff'};font-size:0.9em">${esc(String(c))}</th>`).join('')}</tr></thead>
+    <tbody>
+    ${(slide.rows || []).map(r => `<tr><th style="text-align:left;padding:7px 12px;font-weight:600;border-bottom:1px solid ${t.border}">${esc(String(r.label || ''))}</th>${(r.cells || []).map(c => `<td style="text-align:center;padding:7px 12px;border-bottom:1px solid ${t.border}">${mark(c)}</td>`).join('')}</tr>`).join('\n    ')}
+    </tbody>
+  </table>
+  ${slide.caption ? `<p style="font-size:0.5em;color:${t.muted};margin-top:10px;text-align:left">${esc(slide.caption)}</p>` : ''}
+  ${note}
+</section>`;
+      }
+
+      case 'people': {
+        const list = slide.people || [];
+        const n = [2, 3, 4, 5].includes(slide.columns) ? slide.columns : Math.min(Math.max(list.length, 2), 4);
+        const initials = (name) => String(name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+        return `<section ${bgAttr}>
+  ${slide.heading ? `<h2 style="font-size:1.5em;font-weight:700;color:${t.text};border-bottom:1px solid ${t.border};padding-bottom:14px">${esc(slide.heading)}</h2>` : ''}
+  <div style="display:grid;grid-template-columns:repeat(${n},1fr);gap:20px 16px;margin-top:20px">
+    ${list.map(pn => `<div style="text-align:center">
+      ${pn?.src
+        ? `<img src="${esc(pn.src)}" alt="${esc(pn.name || '')}" style="width:88px;height:88px;border-radius:50%;object-fit:cover;margin:0 auto 10px;display:block">`
+        : `<div style="width:88px;height:88px;border-radius:50%;background:${t.accent};color:${t.onAccent || '#fff'};font-size:0.9em;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 10px">${esc(initials(pn?.name))}</div>`}
+      <div style="font-size:0.62em;font-weight:700;color:${t.text}">${esc(pn?.name || '')}</div>
+      ${pn?.role ? `<div style="font-size:0.52em;color:${t.muted};margin-top:3px">${esc(pn.role)}</div>` : ''}
+    </div>`).join('\n    ')}
+  </div>
+  ${note}
+</section>`;
+      }
+
+      case 'checklist': {
+        const MARK = { done: '✓', doing: '◐', blocked: '✕', todo: '○' };
+        const COLOR = { done: t.accent, doing: t.text, blocked: '#ef6a6a', todo: t.dim };
+        return `<section ${bgAttr}>
+  ${slide.heading ? `<h2 style="font-size:1.5em;font-weight:700;color:${t.text};border-bottom:1px solid ${t.border};padding-bottom:14px">${esc(slide.heading)}</h2>` : ''}
+  <ul style="list-style:none;padding:0;margin-top:20px;text-align:left">
+    ${(slide.items || []).map(it => {
+      const st = MARK[it?.state] ? it.state : 'todo';
+      return `<li style="display:flex;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px solid ${t.border}">
+      <span style="color:${COLOR[st]};font-size:0.8em;width:22px;text-align:center">${MARK[st]}</span>
+      <span style="flex:1;font-size:0.75em;color:${st === 'done' ? t.muted : t.ts}">${esc(it?.label || '')}${it?.note ? `<br><span style="font-size:0.7em;color:${t.muted}">${esc(it.note)}</span>` : ''}</span>
+      <span style="font-family:monospace;font-size:0.5em;color:${COLOR[st]};text-transform:uppercase">${st}</span>
+    </li>`;
+    }).join('\n    ')}
+  </ul>
+  ${note}
+</section>`;
+      }
+
+      case 'compare': {
+        const pane = (label, def) => `<figure style="flex:1;margin:0">
+      <figcaption style="font-size:0.55em;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:${t.accent};margin-bottom:8px">${esc(def?.label || label)}</figcaption>
+      ${def?.src
+        ? `<img src="${esc(def.src)}" alt="${esc(def.alt || '')}" style="width:100%;max-height:52vh;object-fit:${slide.fit === 'contain' ? 'contain' : 'cover'};border-radius:6px">`
+        : `<div style="height:40vh;display:flex;align-items:center;justify-content:center;border:1px dashed ${t.dim};border-radius:6px;color:${t.muted};font-size:0.55em">${esc(def?.alt || label)}</div>`}
+    </figure>`;
+        return `<section ${bgAttr}>
+  ${slide.heading ? `<h2 style="font-size:1.4em;font-weight:700;color:${t.text};margin-bottom:14px">${esc(slide.heading)}</h2>` : ''}
+  <div style="display:flex;gap:18px;align-items:flex-start">
+    ${pane('Before', slide.before)}
+    ${pane('After', slide.after)}
+  </div>
+  ${slide.caption ? `<p style="font-size:0.5em;color:${t.muted};margin-top:12px">${esc(slide.caption)}</p>` : ''}
+  ${note}
+</section>`;
+      }
+
+      case 'appendix':
+        return `<section ${bgAttr}>
+  <div style="font-family:monospace;font-size:0.5em;letter-spacing:2px;text-transform:uppercase;color:${t.accent};margin-bottom:10px">Appendix</div>
+  <h1 style="font-size:2em;font-weight:700;color:${t.text}">${esc(slide.heading || 'Backup Slides')}</h1>
+  <div style="width:48px;height:4px;border-radius:2px;background:${t.accent};margin:18px auto"></div>
+  ${slide.subtitle ? `<p style="font-size:0.75em;color:${t.muted}">${esc(slide.subtitle)}</p>` : ''}
+  ${note}
+</section>`;
+
       default:
         return `<section ${bgAttr}><p>Unknown type: ${esc(type)}</p>${note}</section>`;
     }
@@ -167,6 +334,17 @@ function buildRevealHTML(meta, slides, themeName) {
   .reveal .progress { color: ${t.accent}; height: 3px; }
   .reveal .controls { color: ${t.accent}; }
   .reveal .slide-number { color: ${t.dim}; font-size: 0.55em; }
+  .deck-rail {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 90px 8px 24px;
+    font-size: 12px; color: ${t.dim};
+    border-top: 1px solid ${t.border};
+    pointer-events: none;
+  }
+  .deck-rail .rail-class {
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: ${t.muted};
+  }
   .reveal pre { box-shadow: none; width: 100%; }
   .reveal pre code { max-height: 500px; }
 </style>
@@ -178,6 +356,10 @@ function buildRevealHTML(meta, slides, themeName) {
 ${slideSections}
 
 </div>
+${(meta.footer || meta.classification) ? `<div class="deck-rail">
+  <span>${esc(meta.footer || '')}</span>
+  <span class="rail-class">${esc(meta.classification || '')}</span>
+</div>` : ''}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"><\/script>

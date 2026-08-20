@@ -4,65 +4,71 @@
 
 /* Key order = dropdown order: dark themes first, then light. Names are colors,
    never brands — decks get exported and reshared with this name in their YAML. */
+/* Secondary text is legible, not merely present. `muted` carries captions, stat
+   labels and person roles and clears 4.5:1 on every theme; `dim` carries the
+   footer rail and title meta and clears 3:1, deliberately short of 4.5 so the
+   chrome stays quieter than the body. Before this, muted sat at 3.38 to 4.51
+   and dim at 1.65 to 2.00, and nothing had measured either because
+   relLuminance() returned null for any rgba() string. */
 export const THEMES = {
   neorgon: {
     bg: '#080f20', accent: '#0063e5', text: '#f9f9f9', ts: '#cacaca',
-    muted: 'rgba(255,255,255,.45)', dim: 'rgba(255,255,255,.22)',
+    muted: 'rgba(255,255,255,0.46)', dim: 'rgba(255,255,255,0.35)',
     border: 'rgba(255,255,255,.08)', codeBg: 'rgba(0,0,0,.5)', codeText: '#a5f3fc',
     grad: 'linear-gradient(135deg,rgba(0,99,229,.07) 0%,transparent 55%)',
   },
   royal: {
     bg: '#0a1733', accent: '#4f9cff', text: '#f2f7ff', ts: '#d7e4f7',
-    muted: 'rgba(215,228,247,.5)', dim: 'rgba(215,228,247,.25)',
+    muted: 'rgba(215,228,247,0.53)', dim: 'rgba(215,228,247,0.39)',
     border: 'rgba(79,156,255,.14)', codeBg: 'rgba(3,12,32,.6)', codeText: '#9ec9ff',
     grad: 'linear-gradient(135deg,rgba(0,99,229,.12) 0%,transparent 55%)',
   },
   midnight: {
     bg: '#0d0b1e', accent: '#a78bfa', text: '#f0ecff', ts: '#d8d0f5',
-    muted: 'rgba(216,208,245,.45)', dim: 'rgba(216,208,245,.22)',
+    muted: 'rgba(216,208,245,0.56)', dim: 'rgba(216,208,245,0.42)',
     border: 'rgba(167,139,250,.12)', codeBg: 'rgba(0,0,20,.6)', codeText: '#c4b5fd',
     grad: 'linear-gradient(135deg,rgba(167,139,250,.08) 0%,transparent 55%)',
   },
   forest: {
     bg: '#07130c', accent: '#34d399', text: '#eafff5', ts: '#c9ecd9',
-    muted: 'rgba(201,236,217,.45)', dim: 'rgba(201,236,217,.22)',
+    muted: 'rgba(201,236,217,0.52)', dim: 'rgba(201,236,217,0.39)',
     border: 'rgba(52,211,153,.13)', codeBg: 'rgba(0,12,6,.55)', codeText: '#86efc3',
     grad: 'linear-gradient(135deg,rgba(52,211,153,.07) 0%,transparent 55%)',
   },
   ember: {
     bg: '#130900', accent: '#f59e0b', text: '#fef3c7', ts: '#fde68a',
-    muted: 'rgba(253,230,138,.45)', dim: 'rgba(253,230,138,.22)',
+    muted: 'rgba(253,230,138,0.51)', dim: 'rgba(253,230,138,0.39)',
     border: 'rgba(245,158,11,.12)', codeBg: 'rgba(0,0,0,.55)', codeText: '#fde68a',
     grad: 'linear-gradient(135deg,rgba(245,158,11,.06) 0%,transparent 55%)',
   },
   graphite: {
     bg: '#111418', accent: '#b8c6d4', text: '#f4f6f8', ts: '#d6dce2',
-    muted: 'rgba(214,220,226,.45)', dim: 'rgba(214,220,226,.22)',
+    muted: 'rgba(214,220,226,0.54)', dim: 'rgba(214,220,226,0.41)',
     border: 'rgba(255,255,255,.10)', codeBg: 'rgba(0,0,0,.5)', codeText: '#cbd7e2',
     grad: 'linear-gradient(135deg,rgba(255,255,255,.05) 0%,transparent 55%)',
     onAccent: '#111418',   // silver accent can't carry white text (CTA pill, timeline dots)
   },
   minimal: {
     bg: '#f8fafc', accent: '#1d4ed8', text: '#0f172a', ts: '#1e293b',
-    muted: 'rgba(15,23,42,.5)', dim: 'rgba(15,23,42,.3)',
+    muted: 'rgba(15,23,42,0.6)', dim: 'rgba(15,23,42,0.48)',
     border: 'rgba(15,23,42,.1)', codeBg: 'rgba(0,0,0,.04)', codeText: '#1e40af',
     grad: 'linear-gradient(135deg,rgba(29,78,216,.04) 0%,transparent 55%)',
   },
   azure: {
     bg: '#f2f7fd', accent: '#0063e5', text: '#0c1a2e', ts: '#22344c',
-    muted: 'rgba(12,26,46,.52)', dim: 'rgba(12,26,46,.3)',
+    muted: 'rgba(12,26,46,0.61)', dim: 'rgba(12,26,46,0.48)',
     border: 'rgba(12,26,46,.12)', codeBg: 'rgba(0,60,140,.05)', codeText: '#0056c7',
     grad: 'linear-gradient(135deg,rgba(0,99,229,.08) 0%,transparent 55%)',
   },
   meadow: {
     bg: '#f5faf0', accent: '#3f7d20', text: '#141f0d', ts: '#2a3a1d',
-    muted: 'rgba(20,31,13,.52)', dim: 'rgba(20,31,13,.3)',
+    muted: 'rgba(20,31,13,0.62)', dim: 'rgba(20,31,13,0.49)',
     border: 'rgba(20,31,13,.12)', codeBg: 'rgba(46,90,20,.06)', codeText: '#2f6414',
     grad: 'linear-gradient(135deg,rgba(150,200,60,.12) 0%,transparent 55%)',
   },
   dawn: {
     bg: '#fdf8f1', accent: '#c2410c', text: '#27170a', ts: '#3f2814',
-    muted: 'rgba(39,23,10,.52)', dim: 'rgba(39,23,10,.3)',
+    muted: 'rgba(39,23,10,0.61)', dim: 'rgba(39,23,10,0.48)',
     border: 'rgba(39,23,10,.12)', codeBg: 'rgba(150,60,10,.05)', codeText: '#9a3412',
     grad: 'linear-gradient(135deg,rgba(234,88,12,.08) 0%,transparent 55%)',
   },
@@ -75,7 +81,10 @@ export const state = {
   current:     0,
   fsCurrent:   0,
   error:       null,
-  currentTheme: localStorage.getItem('pres-sage-theme') || 'neorgon',
+  /* This module is imported by the CLI as well as the page, and Node has no
+     localStorage. Reading it through a guard keeps the themes and serializers
+     importable headlessly; the browser behaviour is unchanged. */
+  currentTheme: (typeof localStorage !== 'undefined' && localStorage?.getItem?.('pres-sage-theme')) || 'neorgon',
   themeOverride: false,   // true once the visitor picks a theme this session; deck-declared theme then stops re-applying
   auditOpen:   false,
 };

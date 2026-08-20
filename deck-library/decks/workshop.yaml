@@ -1,0 +1,73 @@
+# Workshop or training session: long, interactive, and read in a bright room.
+# Light theme on purpose. Never put a dark gradient background on this deck,
+# the text is dark ink and would vanish.
+presentation:
+  title: "Workshop: Reading a Flame Graph"
+  subtitle: "Ninety minutes, hands on keyboards"
+  author: "Your Name"
+  date: "2026-08"
+  theme: meadow            # light theme: projector in a room with the lights on
+  footer: "Workshop handout"
+
+  audience: learner
+  outcome: teach
+  duration: 90      # minutes for the talk itself
+
+  slides:
+    - type: title
+      heading: "Workshop: Reading a Flame Graph"
+      subtitle: "Ninety minutes, hands on keyboards"
+
+    - type: agenda
+      auto: true
+      current: 1           # marks the section about to start
+
+    - type: divider
+      heading: "Everyone runs before we teach anything"
+      subtitle: "Everyone running before we teach anything"
+
+    - type: grid
+      heading: "Before we start"
+      columns: 3
+      style: plain         # ruled columns, lighter than cards on a light theme
+      items:
+        - heading: "Install"
+          text: "The profiler from the workshop repo"
+        - heading: "Clone"
+          text: "The sample service, branch `slow`"
+        - heading: "Check"
+          text: "One profile captured and opening"
+
+    - type: qa
+      heading: "Who is not running yet?"
+      subtext: "Hands up now, this is the cheapest moment to fix it"
+
+    - type: divider
+      heading: "Reading the Graph"
+      subtitle: "Width is time, stacking is call depth"
+
+    - type: image
+      heading: "A flame graph with an obvious hot path"
+      src: "/deck-library/assets/demo-flame.svg"   # replace with your own capture
+      alt: "Flame graph with one wide plateau two thirds along the x axis"
+      caption: "The wide plateau is where the time actually goes"
+
+    - type: bullets
+      heading: "What to look at first"
+      bullets:
+        - "Width, not colour"
+        - "Plateaus, not spikes"
+        - "The widest frame you own"
+
+    - type: divider
+      heading: "Your Turn"
+      subtitle: "Find the hot path in the sample service"
+
+    - type: qa
+      heading: "Work in pairs, twenty minutes"
+      subtext: "Find one plateau and write down which function owns it"
+
+    - type: cta
+      heading: "After the workshop"
+      action: "Profile one endpoint in your own service this week"
+      subtext: "Bring the graph to office hours on Thursday"

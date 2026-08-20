@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.jsdelivr.net https://plausible.io; style-src 'self' 'unsafe-inline' https://cdn.neorgon.org; img-src 'self' data: blob: https://cdn.neorgon.org; connect-src 'self' blob: https://plausible.io">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.jsdelivr.net https://plausible.io; style-src 'self' 'unsafe-inline' https://cdn.neorgon.org; img-src 'self' data: blob: https:; connect-src 'self' blob: https://plausible.io">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -76,31 +76,46 @@
     </div>
   </header>
 
-  <!-- Toolbar -->
+  <!-- Toolbar. Each entry point opens the Catalog on its own tab, so a button's
+       label matches what it shows: Examples = whole decks, Design = look, and
+       the editor pane's "+ Slide" = individual slide types. -->
   <div class="toolbar">
     <span class="toolbar-label">Theme:</span>
     <select class="theme-select" id="theme-select" onchange="setTheme(this.value)" aria-label="Slide theme" title="Slide theme">
       <!-- options generated from THEMES in app.js -->
     </select>
-    <div class="sep"></div>
-    <span class="toolbar-label">Export:</span>
-    <button class="btn btn-sm" onclick="exportYAML()" title="Download YAML source">↓ YAML</button>
-    <button class="btn btn-sm" onclick="exportMarp()" title="Download Marp Markdown (run with marp --pptx or --html)">↓ Marp MD</button>
-    <button class="btn btn-sm" onclick="exportHTML()" title="Download standalone HTML slideshow">↓ HTML</button>
-    <button class="btn btn-sm btn-primary" onclick="exportPPTX()" title="Download PowerPoint file">↓ PPTX</button>
-    <div class="sep"></div>
-    <span class="toolbar-label">Publish:</span>
-    <button class="btn btn-sm" onclick="exportReveal()" title="Download Reveal.js presentation HTML">↓ Reveal.js</button>
-    <button class="btn btn-sm btn-primary" onclick="exportBundle()" title="Download ZIP bundle for GitHub Pages">↓ Bundle</button>
-    <button class="btn btn-sm btn-ghost" onclick="openGallery()" title="Manage published presentations gallery">Gallery</button>
-    <div class="sep"></div>
-    <button class="btn btn-sm btn-ghost" onclick="loadSample()" title="Load example deck">⊕ Sample</button>
-    <button class="btn btn-sm btn-ghost" onclick="pickLogo()" title="Embed a local image as the deck logo (data URI, self-contained) — or type logo: with a URL">◉ Logo</button>
-    <input type="file" id="logo-file-input" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none">
 
-    <button class="btn btn-sm btn-ghost" data-action="runAudit" onclick="runAudit()" title="Full-deck flow audit + AI coach">🔍 Audit / Coach</button>
+    <div class="sep"></div>
+
+    <button class="btn btn-sm btn-primary" onclick="openCatalog('decks')" title="Twelve complete decks and four deck structures to start from">⊞ Examples</button>
+    <button class="btn btn-sm" onclick="openCatalog('style')" title="Themes, gradients, patterns, brand colours and deck setup">✳ Design</button>
+
+    <div class="tb-menu">
+      <button class="btn btn-sm" data-menu-toggle aria-haspopup="true" aria-expanded="false">↓ Export</button>
+      <div class="tb-menu-list">
+        <button onclick="exportYAML()">YAML source<span>the deck itself</span></button>
+        <button onclick="exportPPTX()">PowerPoint<span>.pptx, opens in Keynote too</span></button>
+        <button onclick="exportHTML()">Standalone HTML<span>one self-contained file</span></button>
+        <button onclick="exportMarp()">Marp Markdown<span>for marp --pdf or --html</span></button>
+      </div>
+    </div>
+
+    <div class="tb-menu">
+      <button class="btn btn-sm" data-menu-toggle aria-haspopup="true" aria-expanded="false">↑ Publish</button>
+      <div class="tb-menu-list">
+        <button onclick="exportReveal()">Reveal.js page<span>a hosted, navigable deck</span></button>
+        <button onclick="exportBundle()">Pages bundle<span>.zip ready for GitHub Pages</span></button>
+        <button onclick="openGallery()">Gallery<span>manage what you published</span></button>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <button class="btn btn-sm btn-ghost" data-action="runAudit" onclick="runAudit()" title="Density checks, measured fit, and coaching (A)">🔍 Audit</button>
     <button class="btn btn-sm btn-ghost" onclick="openGrid()" title="Grid overview, all slides at a glance (G)">⊞ Overview</button>
     <button class="btn btn-sm btn-ghost" onclick="openPresenter()" title="Present fullscreen with notes + timer (F)">⛶ Present</button>
+    <button class="btn btn-sm btn-ghost" onclick="startTour()" title="Show me around (T)">? Tour</button>
+    <input type="file" id="logo-file-input" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none">
   </div>
 
   <!-- Workspace -->
@@ -111,30 +126,14 @@
       <div class="pane-header">
         <span class="dot dot-blue"></span> YAML source
         <span id="slide-count-badge" style="margin-left:auto;font-size:.68rem;color:var(--text-dim)"></span>
-        <div class="insert-slide-wrap">
-          <button class="btn btn-sm btn-ghost" id="insert-slide-btn" onclick="toggleInsertMenu()" title="Insert slide template at cursor">+ Slide</button>
-          <div class="insert-menu" id="insert-menu">
-            <button onclick="insertSlide('title')">Title</button>
-            <button onclick="insertSlide('bullets')">Bullets</button>
-            <button onclick="insertSlide('split')">Split</button>
-            <button onclick="insertSlide('code')">Code</button>
-            <button onclick="insertSlide('quote')">Quote</button>
-            <button onclick="insertSlide('divider')">Divider</button>
-            <button onclick="insertSlide('qa')">Q&amp;A</button>
-            <button onclick="insertSlide('cta')">CTA</button>
-            <button onclick="insertSlide('image')">Image</button>
-            <button onclick="insertSlide('stats')">Stats</button>
-            <button onclick="insertSlide('timeline')">Timeline</button>
-            <button onclick="insertSlide('columns')">Columns</button>
-          </div>
-        </div>
+        <button class="btn btn-sm btn-ghost" onclick="openCatalog('slides')" title="Insert one slide type (C)">+ Slide</button>
       </div>
       <textarea id="yaml-input"
         spellcheck="false"
         aria-label="YAML slide source editor"
-        placeholder="# Paste your YAML here, or click ⊕ Sample to load an example.
+        placeholder="# Paste your YAML here, or open the Catalog to start from a deck.
 # Slide types: title, bullets, split, code, quote, divider, qa, cta, image, stats, timeline, columns"></textarea>
-      <div class="warnings-bar empty" id="warnings">✓ No issues</div>
+      <div class="warnings-bar empty" id="warnings" role="status" aria-live="polite" aria-atomic="false">✓ No issues</div>
     </div>
 
     <!-- Preview pane -->
@@ -143,14 +142,14 @@
         <span class="dot dot-green"></span> Preview
         <div class="slide-nav">
           <button class="nav-btn" id="prev-btn" onclick="prevSlide()" aria-label="Previous slide" disabled>‹</button>
-          <span id="slide-counter">— / —</span>
+          <span id="slide-counter" role="status" aria-live="polite">— / —</span>
           <button class="nav-btn" id="next-btn" onclick="nextSlide()" aria-label="Next slide" disabled>›</button>
         </div>
       </div>
-      <div class="slide-stage" id="stage">
+      <div class="slide-stage" id="stage" role="region" aria-label="Slide preview">
         <div class="stage-empty">
           <div class="s-icon">📄</div>
-          <p>Paste YAML to get started<br>or click ⊕ Sample above</p>
+          <p>Paste YAML to get started<br>or open the ✳ Catalog above</p>
         </div>
       </div>
       <div class="filmstrip" id="filmstrip"></div>
@@ -170,6 +169,67 @@
       <span id="fs-counter">1 / 1</span>
       <button class="nav-btn" id="fs-next" onclick="fsNext()" aria-label="Next slide">›</button>
     </div>
+  </div>
+
+  <!-- Confirm replacing the editor's deck -->
+  <dialog class="neo-dialog" id="confirm-dialog">
+    <h3 id="confirm-title">Replace the current deck?</h3>
+    <p id="confirm-body"></p>
+    <div class="neo-dialog-actions">
+      <button class="btn btn-sm" value="cancel" id="confirm-cancel">Keep mine</button>
+      <button class="btn btn-sm btn-primary" value="ok" id="confirm-ok">Replace</button>
+    </div>
+  </dialog>
+
+  <!-- First visit: start from something, or from nothing -->
+  <dialog class="neo-dialog neo-dialog-wide" id="welcome-dialog">
+    <h3>Write slides as YAML</h3>
+    <p>The editor on the left is the deck. Everything else reads from it.</p>
+    <div class="welcome-choices">
+      <button class="welcome-choice" data-choice="example">
+        <strong>Start from an example</strong>
+        <span>Twelve complete decks: reviews, postmortems, talks. Edit one instead of an empty file.</span>
+      </button>
+      <button class="welcome-choice" data-choice="scratch">
+        <strong>Start from scratch</strong>
+        <span>A title slide and nothing else. The Catalog inserts the rest.</span>
+      </button>
+      <button class="welcome-choice" data-choice="tour">
+        <strong>Show me around first</strong>
+        <span>Six steps, about a minute.</span>
+      </button>
+    </div>
+  </dialog>
+
+  <!-- Guided tour -->
+  <div class="tour-veil" id="tour-veil" hidden></div>
+  <div class="tour-pop" id="tour-pop" hidden>
+    <div class="tour-step" id="tour-step"></div>
+    <p id="tour-text"></p>
+    <div class="tour-actions">
+      <button class="btn btn-sm btn-ghost" id="tour-skip">Skip</button>
+      <button class="btn btn-sm btn-primary" id="tour-next">Next</button>
+    </div>
+  </div>
+
+  <!-- Catalog overlay: slide types, gradients, patterns -->
+  <div class="cat-overlay" id="cat-overlay">
+    <div class="cat-bar">
+      <h2>✳ Catalog</h2>
+      <div class="cat-tabs" id="cat-tabs">
+        <button data-tab="decks">Decks</button>
+        <button data-tab="slides">Slides</button>
+        <button data-tab="style">Design</button>
+        <button data-tab="setup">Setup</button>
+      </div>
+      <div class="cat-scope">
+        <span>Apply styles to:</span>
+        <label><input type="radio" name="cat-scope" value="slide" checked> this slide</label>
+        <label><input type="radio" name="cat-scope" value="deck"> whole deck</label>
+      </div>
+      <button class="grid-close" onclick="closeCatalog()" aria-label="Close catalog">✕ Close (Esc)</button>
+    </div>
+    <div class="cat-scroll" id="cat-body"></div>
   </div>
 
   <!-- Grid overview overlay -->

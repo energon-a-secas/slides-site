@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="Demo dashboard screenshot">
+  <rect width="800" height="500" fill="#0e1524"/>
+  <rect width="800" height="52" fill="#141d31"/>
+  <circle cx="26" cy="26" r="6" fill="#ff5f57"/><circle cx="46" cy="26" r="6" fill="#febc2e"/><circle cx="66" cy="26" r="6" fill="#28c840"/>
+  <rect x="96" y="18" width="150" height="16" rx="8" fill="#22304d"/>
+  <g fill="#8fb6e8" font-family="Avenir Next, Segoe UI, system-ui, sans-serif">
+    <text x="32" y="96" font-size="15" font-weight="700">Delivery latency</text>
+    <text x="32" y="118" font-size="12" fill="#7f8ea3">last 24 hours</text>
+  </g>
+  <g stroke="#22304d" stroke-width="1">
+    <line x1="32" y1="300" x2="768" y2="300"/><line x1="32" y1="240" x2="768" y2="240"/>
+    <line x1="32" y1="180" x2="768" y2="180"/>
+  </g>
+  <polyline fill="none" stroke="#4f9cff" stroke-width="3" stroke-linejoin="round"
+    points="32,268 110,250 188,258 266,214 344,226 422,196 500,206 578,186 656,192 734,172"/>
+  <polygon fill="#4f9cff" opacity=".13"
+    points="32,268 110,250 188,258 266,214 344,226 422,196 500,206 578,186 656,192 734,172 734,300 32,300"/>
+  <g>
+    <rect x="32" y="340" width="230" height="120" rx="10" fill="#141d31"/>
+    <rect x="285" y="340" width="230" height="120" rx="10" fill="#141d31"/>
+    <rect x="538" y="340" width="230" height="120" rx="10" fill="#141d31"/>
+    <g font-family="Avenir Next, Segoe UI, system-ui, sans-serif" fill="#4f9cff" font-size="30" font-weight="800">
+      <text x="52" y="392">0.8s</text><text x="305" y="392">4.2m</text><text x="558" y="392">0</text>
+    </g>
+    <g font-family="Avenir Next, Segoe UI, system-ui, sans-serif" fill="#7f8ea3" font-size="12">
+      <text x="52" y="420">p95 delivery</text><text x="305" y="420">events / day</text><text x="558" y="420">failed deliveries</text>
+    </g>
+  </g>
+</svg>

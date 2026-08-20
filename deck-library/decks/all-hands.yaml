@@ -1,0 +1,78 @@
+# All-hands update: read by people who do not share your context.
+# No acronyms, and every number says what it is measured against.
+presentation:
+  title: "August All-Hands"
+  subtitle: "What shipped, what is next, who joined"
+  author: "Your Name"
+  date: "2026-08"
+  theme: royal
+  pattern: dots
+  footer: "All-hands · August"
+
+  audience: mixed
+  outcome: inform
+  duration: 30      # minutes for the talk itself
+
+  slides:
+    - type: title
+      heading: "August All-Hands"
+      subtitle: "What shipped, what is next, who joined"
+
+    - type: agenda
+      auto: true
+
+    - type: divider
+      heading: "The Month in Numbers"
+      subtitle: "Against the plan, not against last month"
+
+    - type: stats
+      heading: "Where we landed"
+      stats:
+        - value: "31%"
+          label: "Lower infrastructure spend"
+        - value: "0.8s"
+          label: "Median delivery, was 5s"
+        - value: "12"
+          label: "Teams migrated of 18"
+
+    - type: divider
+      heading: "What Shipped"
+      subtitle: "And what slipped, plainly"
+
+    - type: checklist
+      heading: "The commitments we made in July"
+      items:
+        - label: "Event delivery under a second"
+          state: done
+        - label: "Console redesign"
+          state: done
+        - label: "Self-serve onboarding"
+          state: doing
+          note: "two weeks behind, no risk to the quarter"
+        - label: "Vendor consolidation"
+          state: blocked
+          note: "waiting on a contract date"
+
+    - type: qa
+      heading: "Questions on any of that?"
+      subtext: "Now, or in the channel afterwards"
+
+    - type: divider
+      heading: "Who Joined"
+      subtitle: "Say hello if you have not"
+
+    - type: people
+      heading: "New this month"
+      columns: 3
+      people:
+        - name: "Riley Chen"
+          role: "Platform engineering"
+        - name: "Dana Whitfield"
+          role: "Support engineering"
+        - name: "Noor Haddad"
+          role: "Design"
+
+    - type: cta
+      heading: "Next Month"
+      action: "Move your team's last service off polling"
+      subtext: "The migration guide and office hours are in the handbook"

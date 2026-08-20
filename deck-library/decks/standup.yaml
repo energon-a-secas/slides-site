@@ -1,0 +1,29 @@
+presentation:
+  title: "Daily Standup"
+  subtitle: "Quick team sync"
+  author: "Neorgon"
+
+  slides:
+    - type: title
+      heading: "Daily Standup"
+      subtitle: "Quick team sync"
+
+    - type: bullets
+      heading: "Yesterday I shipped [your win]"
+      bullets:
+        - "Shipped: [your win]"
+        - "Merged: [PR / change]"
+        - "Learned: [insight]"
+
+    - type: bullets
+      heading: "Today I am on [top priority]"
+      bullets:
+        - "Focus: [top priority]"
+        - "Review: [PR / doc]"
+        - "Meet: [sync]"
+
+    - type: bullets
+      heading: "I need help with [blocker]"
+      bullets:
+        - "[What is stopping you, or delete this slide]"
+        - "Who you need it from"

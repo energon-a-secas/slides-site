@@ -1,0 +1,76 @@
+# Customer QBR: their business, not your roadmap. Value first, ask last.
+presentation:
+  title: "Quarterly Business Review"
+  subtitle: "[Customer] · Q3 2026"
+  author: "Your Name"
+  date: "2026-Q3"
+  theme: minimal
+  footer: "QBR · [Customer] · Q3"
+
+  audience: customer
+  big_idea: "Pick two priorities for Q4 this month so scoping finishes before the renewal conversation."
+  outcome: approve
+  duration: 45      # minutes for the talk itself
+
+  slides:
+    - type: title
+      heading: "Quarterly Business Review"
+      subtitle: "[Customer] · Q3 2026"
+
+    - type: quote
+      text: "Pick two priorities for Q4, this month."
+      source: "The one decision this review needs"
+
+    - type: agenda
+      auto: true
+
+    - type: divider
+      heading: "What You Got"
+      subtitle: "Measured against the goals we set in April"
+
+    - type: stats
+      heading: "This quarter"
+      stats:
+        - value: "94%"
+          label: "Of your team active weekly"
+        - value: "312h"
+          label: "Manual work removed"
+        - value: "2"
+          label: "Support tickets, both resolved same day"
+
+    - type: table
+      heading: "Against the goals we set in April"
+      columns: ["Goal", "Target", "Actual"]
+      align: [left, right, right]
+      highlight: 2
+      rows:
+        - ["Weekly active users", "80%", "94%"]
+        - ["Time saved per week", "200h", "312h"]
+        - ["Onboarded teams", "6", "5"]
+      caption: "One team slipped to October by your request"
+
+    - type: qa
+      heading: "Does this match what you are seeing?"
+      subtext: "Your numbers matter more than ours here"
+
+    - type: divider
+      heading: "What Is Next"
+      subtitle: "Where the remaining value is"
+
+    - type: matrix
+      heading: "What we could take on next quarter"
+      columns: ["Now", "Q4", "Later"]
+      highlight: 2
+      rows:
+        - label: "Single sign-on"
+          cells: [no, yes, yes]
+        - label: "Custom reporting"
+          cells: [partial, yes, yes]
+        - label: "Regional hosting"
+          cells: [no, no, yes]
+      caption: "Pick two for Q4 and we will scope them this month"
+
+    - type: cta
+      heading: "Pick two priorities for Q4 this month"
+      action: "Confirm the two Q4 priorities by the end of the month"
+      subtext: "Renewal paperwork follows the scope, not the other way around"

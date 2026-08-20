@@ -1,0 +1,70 @@
+# Launch announcement: short, loud, and mostly looked at rather than read.
+# This is the deck that earns its gradients. Every background: below is a
+# preset, and all presets are dark, which is why the theme is dark too.
+presentation:
+  title: "Introducing Relay"
+  subtitle: "Your events, everywhere, in under a second"
+  author: "Your Name"
+  date: "2026-08"
+  theme: midnight
+  pattern: orbs            # soft glow rather than a repeating texture
+  logo: "/deck-library/assets/demo-logo.svg"   # swap for your own mark
+  logo_size: 84            # title slide only; logo_all would stamp every slide
+
+  audience: mixed
+  outcome: convince
+  duration: 10      # minutes for the talk itself
+
+  slides:
+    - type: title
+      heading: "Introducing Relay"
+      subtitle: "Your events, everywhere, in under a second"
+      background: midnight
+
+    - type: quote
+      text: "We waited five seconds to learn something that had already happened."
+      source: "Every on-call engineer, at some point"
+      background: storm
+
+    - type: stats
+      heading: "What changed"
+      background: ocean
+      stats:
+        - value: "<1s"
+          label: "End to end delivery"
+        - value: "0"
+          label: "Polling jobs left"
+        - value: "12"
+          label: "Teams already on it"
+
+    - type: grid
+      heading: "What you get"
+      columns: 3
+      items:
+        - icon: "◆"
+          heading: "Subscribe"
+          text: "One line, no new infrastructure"
+        - icon: "▲"
+          heading: "Replay"
+          text: "Seek to any point in the last week"
+        - icon: "●"
+          heading: "Observe"
+          text: "Lag and delivery on one dashboard"
+
+    - type: media
+      heading: "It looks like this"
+      src: "/deck-library/assets/demo-dashboard.svg"   # replace with your own screenshot
+      alt: "The Relay dashboard showing delivery latency under a second"
+      side: left
+      fit: cover
+      text: "One dashboard for every stream you subscribe to, with lag and delivery on the same axis."
+
+    - type: qa
+      heading: "Want it for your team?"
+      subtext: "We are onboarding two teams a week"
+
+    - type: cta
+      heading: "Get started"
+      action: "Subscribe your first stream today"
+      background: aurora
+      subtext: "Docs, examples, and the onboarding form are in the handbook"

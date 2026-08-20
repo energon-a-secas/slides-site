@@ -1,0 +1,34 @@
+presentation:
+  title: "Sprint Retro"
+  subtitle: "Sprint [N]: [Team]"
+  author: "Neorgon"
+
+  slides:
+    - type: title
+      heading: "Sprint Retro"
+      subtitle: "Sprint [N]: [Team]"
+
+    - type: bullets
+      heading: "What Went Well"
+      bullets:
+        - "[Win 1]"
+        - "[Win 2]"
+        - "[Win 3]"
+
+    - type: bullets
+      heading: "What Slowed Us Down"
+      bullets:
+        - "[Friction 1]"
+        - "[Friction 2]"
+
+    - type: bullets
+      heading: "What We Will Try Next"
+      bullets:
+        - "[Experiment 1]"
+        - "[Experiment 2]"
+
+    - type: bullets
+      heading: "Each action has an owner and a date"
+      bullets:
+        - "[Action]: @owner: due [date]"
+        - "[Action]: @owner: due [date]"

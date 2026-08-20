@@ -4,9 +4,10 @@
 
 import { state } from './state.js';
 import { esc } from './utils.js';
-import { validate } from './parser.js';
+import { validate, storyline } from './parser.js';
+import { measureFit } from './geometry.js';
 
-export function runAudit() {
+export async function runAudit() {
   if (!state.slides.length) return;
   state.auditOpen = !state.auditOpen;
   document.getElementById('audit-panel').classList.toggle('open', state.auditOpen);
@@ -15,6 +16,26 @@ export function runAudit() {
   if (!state.auditOpen) return;
 
   const ws = validate(state.slides, state.meta);
+
+  /* Measured, not inferred. The density rules above are proxies for fit; this
+     is the fit. */
+  let fit = [];
+  try {
+    fit = await measureFit(state.slides, state.meta);
+  } catch (e) {
+    console.error('geometry pass failed', e);
+  }
+  const story = storyline(state.slides);
+  const storyHtml = story.length
+    ? `<div class="audit-storyline">${story.map(r =>
+        `<div><span>${r.n}</span>${esc(r.text)}</div>`).join('')}</div>`
+    : '<div class="audit-ok">Nothing to read yet</div>';
+
+  const fitHtml = fit.length
+    ? fit.map(f => `<div class="audit-item lvl-${f.level}">
+        <span class="audit-badge">slide ${f.slide}</span>
+        <span>${esc(f.msg)}</span></div>`).join('')
+    : `<div class="audit-ok">\u2713 Every slide fits its box</div>`;
   const issueHtml = ws.length
     ? ws.map(w => `<div class="audit-item lvl-${w.level}">
         <span class="audit-badge">${w.slide ? 'slide ' + w.slide : 'deck'}</span>
@@ -36,7 +57,7 @@ export function runAudit() {
     { pattern: /full sentence/, tip: 'Replace the sentence with a punchy fragment; save the full thought for your voice.' },
     { pattern: /Code block: \d+ lines/, tip: 'Show only the 5-10 lines that prove the point; link to the full snippet.' },
     { pattern: /Split slide: \d+ items per column/, tip: 'Drop the weakest comparison point so each side has 3-4 items.' },
-    { pattern: /Missing heading/, tip: 'Add a 3-5 word heading that frames the one takeaway.' },
+    { pattern: /Missing heading/, tip: 'Add a heading that states the takeaway, not the topic: "Rollout" says nothing, "Rollout takes three weeks" does.' },
     { pattern: /No Q&A or pause slide/, tip: 'Insert a Q&A or pause slide after the strongest proof point.' },
     { pattern: /No CTA slide/, tip: 'End with one specific ask: what should the audience do next?' },
     { pattern: /First slide is not a title/, tip: 'Open with a title slide that names the problem, not just the topic.' },
@@ -63,12 +84,18 @@ export function runAudit() {
     : `<div class="audit-ok">\u2713 No specific rewrites suggested</div>`;
 
   document.getElementById('audit-inner').innerHTML = `
-    <div class="audit-title">"${esc(state.meta.title)}" \u00B7 ${state.slides.length} slides \u00B7 ${ws.length} issue(s)</div>
+    <div class="audit-title">"${esc(state.meta.title)}" \u00B7 ${state.slides.length} slides \u00B7 ${ws.length + fit.filter(f => f.level === 'warn').length} issue(s)</div>
     <div class="audit-section">
       <div class="audit-section-head">Density checks</div>${issueHtml}
     </div>
     <div class="audit-section">
-      <div class="audit-section-head">AI Coach suggestions</div>${coachHtml}
+      <div class="audit-section-head">Fit on the slide (measured)</div>${fitHtml}
+    </div>
+    <div class="audit-section">
+      <div class="audit-section-head">Coaching suggestions</div>${coachHtml}
+    </div>
+    <div class="audit-section">
+      <div class="audit-section-head">Storyline: the headings, in order</div>${storyHtml}
     </div>
     <div class="audit-section">
       <div class="audit-section-head">Flow questions</div>

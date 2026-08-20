@@ -1,0 +1,91 @@
+# Executive review: a standing update to people who did not attend the work.
+# Leads with the decision, keeps the detail in one table, ends with the ask.
+presentation:
+  title: "Quarterly Platform Review"
+  subtitle: "Where the money went and what we recommend"
+  author: "Your Name"
+  date: "2026-Q3"
+  theme: graphite          # understated: the room is looking at the numbers, not the deck
+  pattern: grid            # faint ruled texture, reads as a ledger rather than decoration
+  footer: "Platform review · Q3"
+  classification: "Internal"
+
+  audience: exec
+  big_idea: "Consolidating on one queue vendor buys two quarters of headroom and removes three renewals, if we approve it this month."
+  outcome: approve
+  duration: 20      # minutes for the talk itself
+
+  slides:
+    - type: title
+      heading: "Quarterly Platform Review"
+      subtitle: "Where the money went and what we recommend"
+
+    # BLUF: the recommendation first, then the evidence for it. A room that has
+    # to decide should not wait until slide nine to learn what it is deciding.
+    - type: quote
+      text: "Consolidate on one queue vendor next quarter."
+      source: "The recommendation, in one line"
+
+    - type: agenda
+      auto: true           # reads the divider headings below
+
+    - type: stats
+      heading: "Spend fell 31% while we served 4.2m requests a day"
+      stats:
+        - value: "31%"
+          label: "Lower infrastructure spend"
+        - value: "4.2m"
+          label: "Requests served daily"
+        - value: "2"
+          label: "Incidents, both under an hour"
+
+    - type: divider
+      heading: "Two areas came in under plan, one over"
+      subtitle: "Spend against the plan"
+
+    - type: table
+      heading: "Compute and vendors landed under plan, storage 10% over"
+      columns: ["Area", "Planned", "Actual", "Delta"]
+      align: [left, right, right, right]
+      highlight: 3
+      rows:
+        - ["Compute", "$120k", "$96k", "-20%"]
+        - ["Storage", "$40k", "$44k", "+10%"]
+        - ["Vendors", "$80k", "$61k", "-24%"]
+      caption: "Finance close, first week of the quarter"
+
+    - type: media
+      heading: "Two services account for most of the bill"
+      # src: "/deck-library/assets/demo-dashboard.svg"   # uncomment to see it filled
+      alt: "Cost dashboard by service"
+      side: right
+      bullets:
+        - "Two services account for most of it"
+        - "The rest is noise, do not chase it"
+
+    - type: qa
+      heading: "Anything to challenge before the recommendation?"
+      subtext: "Easier to argue with the numbers now than after the decision"
+
+    - type: divider
+      heading: "Consolidating is the one decision we are asking for"
+      subtitle: "One decision, stated plainly"
+
+    - type: grid
+      heading: "Consolidation buys headroom, one contract, and faster recovery"
+      columns: 3
+      items:
+        - icon: "◆"
+          heading: "Headroom"
+          text: "Two quarters of growth without a migration"
+        - icon: "▲"
+          heading: "Fewer vendors"
+          text: "One contract instead of four renewals"
+        - icon: "●"
+          heading: "Faster recovery"
+          text: "Restore measured in minutes, not hours"
+
+    - type: cta
+      heading: "Approve the consolidation this month"
+      action: "Approve the consolidation for next quarter"
+      subtext: "Decision needed by the end of the month to hit the renewal date"

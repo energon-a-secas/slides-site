@@ -4,6 +4,7 @@
 
 import { state, THEMES, applyTheme, applyPattern, themeWithBrand, resolveBg } from './state.js';
 import { esc, inlineMd, scaleSlide } from './utils.js';
+import { pageLabel } from './serialize.js';
 import { parseYAML, validate } from './parser.js';
 
 /* ── Logo helpers ─────────────────────────────────────────────────────── */
@@ -24,12 +25,40 @@ function resolveLogo(meta) {
 
 /* Where the per-slide stamp sits. bottom-right lifts above the slide number,
    which owns that corner. Default (no logo_pos) keeps the CSS top-right. */
+/* Kept inside the same graphics-safe band as .slide-num in the stylesheet:
+   5% per edge, so 27px vertical and 48px horizontal on a 960x540 slide. */
 const LOGO_POS = {
-  'top-left':     { top: '16px',  left: '18px',  right: 'auto', bottom: 'auto' },
-  'top-right':    { top: '16px',  right: '18px', left: 'auto',  bottom: 'auto' },
-  'bottom-left':  { bottom: '14px', left: '18px', top: 'auto',  right: 'auto' },
-  'bottom-right': { bottom: '32px', right: '18px', top: 'auto', left: 'auto' },
+  'top-left':     { top: '24px',  left: '40px',  right: 'auto', bottom: 'auto' },
+  'top-right':    { top: '24px',  right: '40px', left: 'auto',  bottom: 'auto' },
+  'bottom-left':  { bottom: '24px', left: '40px', top: 'auto',  right: 'auto' },
+  'bottom-right': { bottom: '42px', right: '40px', top: 'auto', left: 'auto' },
 };
+
+
+/* Which section a divider opens, and how many the deck has. Dividers are the
+   deck's own table of contents, so both the "Section k of n" eyebrow and an
+   `auto` agenda read from them rather than from a list the author maintains
+   twice. */
+function sectionOf(index) {
+  let n = 0, k = 0;
+  state.slides.forEach((s, i) => {
+    if ((s.type || 'bullets') === 'divider') { n++; if (i === index) k = n; }
+  });
+  return { k, n };
+}
+
+/* Media that is not there yet. A missing `src` renders a labelled frame rather
+   than a browser's broken-image glyph, so a deck can be structured before the
+   screenshots exist and the gap is legible in the filmstrip. */
+function mediaFrame(slide) {
+  if (slide.src)
+    return `<img src="${esc(slide.src)}" alt="${esc(slide.alt || '')}" class="slide-image">`;
+  return `<div class="media-placeholder">
+      <div class="mp-label">${esc(slide.alt || slide.caption || 'Media')}</div>
+      <div class="mp-sub">add a src</div>
+    </div>`;
+}
+
 
 /* ── Slide renderer → HTMLElement ─────────────────────────────────────── */
 
@@ -37,7 +66,7 @@ export function renderSlide(slide, index, total) {
   const el  = document.createElement('div');
   const num = document.createElement('div');
   num.className = 'slide-num';
-  num.textContent = `${index + 1} / ${total}`;
+  num.textContent = state.slides[index] === slide ? pageLabel(state.slides, index) : `${index + 1} / ${total}`;
 
   const type = slide.type || 'bullets';
   el.className = `slide slide-type-${type}`;
@@ -105,7 +134,11 @@ export function renderSlide(slide, index, total) {
       break;
     }
     case 'divider': {
+      const sec = sectionOf(index);
+      const eyebrow = (sec.n > 1 && slide.progress !== false)
+        ? `<div class="section-progress">Section ${sec.k} of ${sec.n}</div>` : '';
       el.innerHTML = `
+        ${eyebrow}
         <div class="s-heading">${esc(slide.heading || '')}</div>
         <div class="accent-bar" style="margin:14px 0"></div>
         ${slide.subtitle ? `<div class="s-subtitle">${esc(slide.subtitle)}</div>` : ''}`;
@@ -131,13 +164,13 @@ export function renderSlide(slide, index, total) {
         el.innerHTML = `
           <div class="s-heading">${esc(slide.heading)}</div>
           <div class="image-container fit-${slide.fit || 'contain'}">
-            <img src="${esc(slide.src || '')}" alt="${esc(slide.alt || '')}" class="slide-image">
+            ${mediaFrame(slide)}
           </div>
           ${caption}`;
       } else {
         el.innerHTML = `
           <div class="image-container full fit-${slide.fit || 'contain'}">
-            <img src="${esc(slide.src || '')}" alt="${esc(slide.alt || '')}" class="slide-image">
+            ${mediaFrame(slide)}
           </div>
           ${caption}`;
       }
@@ -182,6 +215,194 @@ export function renderSlide(slide, index, total) {
         </div>`;
       break;
     }
+    case 'agenda': {
+      /* `auto: true` reads the deck's dividers, so the agenda cannot drift from
+         the talk it announces. An explicit `items:` list always wins. */
+      const items = (slide.items && slide.items.length)
+        ? slide.items
+        : (slide.auto
+            ? state.slides.filter(s2 => (s2.type || 'bullets') === 'divider').map(s2 => s2.heading || '')
+            : []);
+      const cur = typeof slide.current === 'number' ? slide.current : 0;
+      const li = items.map((it, ii) => {
+        const label = typeof it === 'string' ? it : (it?.label || '');
+        const text  = typeof it === 'string' ? '' : (it?.text || '');
+        return `<li class="agenda-item${ii + 1 === cur ? ' is-current' : ''}">
+          <span class="agenda-num">${String(ii + 1).padStart(2, '0')}</span>
+          <span class="agenda-body">
+            <span class="agenda-label">${inlineMd(label)}</span>
+            ${text ? `<span class="agenda-text">${inlineMd(text)}</span>` : ''}
+          </span>
+        </li>`;
+      }).join('');
+      el.innerHTML = `
+        <div class="s-heading">${esc(slide.heading || 'Agenda')}</div>
+        ${slide.subtitle ? `<div class="s-subtitle">${esc(slide.subtitle)}</div>` : ''}
+        <ol class="agenda-list${items.length > 5 ? ' two-col' : ''}">${li}</ol>`;
+      break;
+    }
+    case 'table': {
+      const cols = slide.columns || [];
+      const rows = slide.rows || [];
+      const align = slide.align || [];
+      const al = (ci) => align[ci] === 'right' || align[ci] === 'center' ? ` class="al-${align[ci]}"` : '';
+      const head = cols.map((c, ci) => `<th${al(ci)}>${inlineMd(String(c))}</th>`).join('');
+      const body = rows.map((r, ri) => {
+        const cells = (Array.isArray(r) ? r : [r])
+          .map((c, ci) => `<td${al(ci)}>${inlineMd(String(c ?? ''))}</td>`).join('');
+        return `<tr class="${ri + 1 === slide.highlight ? 'is-highlight' : ''}">${cells}</tr>`;
+      }).join('');
+      el.innerHTML = `
+        ${slide.heading ? `<div class="s-heading">${esc(slide.heading)}</div>` : ''}
+        <div class="table-wrap">
+          <table class="slide-table dens-${rows.length > 6 ? 'tight' : 'normal'}">
+            ${cols.length ? `<thead><tr>${head}</tr></thead>` : ''}
+            <tbody>${body}</tbody>
+          </table>
+        </div>
+        ${slide.caption ? `<div class="table-caption">${esc(slide.caption)}</div>` : ''}`;
+      break;
+    }
+    case 'grid': {
+      const items = slide.items || [];
+      const cols = [2, 3, 4].includes(slide.columns)
+        ? slide.columns
+        : Math.min(Math.max(items.length, 2), 4);
+      const style = slide.style === 'plain' ? 'plain' : 'cards';
+      const cells = items.map(it => `
+        <div class="grid-item">
+          ${it?.icon ? `<div class="grid-icon">${esc(it.icon)}</div>` : ''}
+          ${it?.heading ? `<div class="grid-item-head">${inlineMd(it.heading)}</div>` : ''}
+          ${it?.text ? `<div class="grid-item-text">${inlineMd(it.text)}</div>` : ''}
+          ${(it?.bullets || []).length
+            ? `<ul class="grid-item-bullets">${(it.bullets || []).map(b => `<li>${inlineMd(b)}</li>`).join('')}</ul>`
+            : ''}
+        </div>`).join('');
+      el.innerHTML = `
+        ${slide.heading ? `<div class="s-heading">${esc(slide.heading)}</div>` : ''}
+        ${slide.subtitle ? `<div class="s-subtitle">${esc(slide.subtitle)}</div>` : ''}
+        <div class="grid-items cols-${cols} style-${style}">${cells}</div>`;
+      break;
+    }
+    case 'media': {
+      /* Copy in a padded column, media bleeding to the slide edge on the other
+         side. The image is the evidence; the column is what to look at in it. */
+      const side = slide.side === 'left' ? 'left' : 'right';
+      const body = (slide.bullets || []).length
+        ? `<ul class="s-bullets">${(slide.bullets || []).map(b => `<li>${inlineMd(b)}</li>`).join('')}</ul>`
+        : (slide.text ? `<div class="col-text">${inlineMd(slide.text)}</div>` : '');
+      el.innerHTML = `
+        <div class="media-layout side-${side}">
+          <div class="media-copy">
+            ${slide.heading ? `<div class="s-heading">${esc(slide.heading)}</div>` : ''}
+            ${slide.subtitle ? `<div class="s-subtitle">${esc(slide.subtitle)}</div>` : ''}
+            ${body}
+            ${slide.caption ? `<div class="image-caption">${esc(slide.caption)}</div>` : ''}
+          </div>
+          <div class="media-figure fit-${slide.fit === 'contain' ? 'contain' : 'cover'}">
+            ${mediaFrame(slide)}
+          </div>
+        </div>`;
+      break;
+    }
+    case 'matrix': {
+      /* Read down a column, not across a row: a matrix answers "which option"
+         where a table answers "what are the numbers". */
+      const cols = slide.columns || [];
+      const rows = slide.rows || [];
+      const MARK = {
+        yes:     '<span class="mx-mark mx-yes">✓</span>',
+        no:      '<span class="mx-mark mx-no">✕</span>',
+        partial: '<span class="mx-mark mx-partial">–</span>',
+      };
+      const cell = (v) => {
+        const key = String(v).trim().toLowerCase();
+        if (v === true) return MARK.yes;
+        if (v === false) return MARK.no;
+        return MARK[key] || inlineMd(String(v ?? ''));
+      };
+      const hl = (ci) => ci + 1 === slide.highlight ? ' class="is-highlight"' : '';
+      const head = cols.map((c, ci) => `<th${hl(ci)}>${inlineMd(String(c))}</th>`).join('');
+      const body = rows.map(r => {
+        const cells = (r.cells || []).map((c, ci) => `<td${hl(ci)}>${cell(c)}</td>`).join('');
+        return `<tr><th class="mx-row-label">${inlineMd(String(r.label || ''))}</th>${cells}</tr>`;
+      }).join('');
+      el.innerHTML = `
+        ${slide.heading ? `<div class="s-heading">${esc(slide.heading)}</div>` : ''}
+        <div class="table-wrap">
+          <table class="slide-table slide-matrix">
+            <thead><tr><th></th>${head}</tr></thead>
+            <tbody>${body}</tbody>
+          </table>
+        </div>
+        ${slide.caption ? `<div class="table-caption">${esc(slide.caption)}</div>` : ''}`;
+      break;
+    }
+    case 'people': {
+      const list = slide.people || [];
+      const cols = [2, 3, 4, 5].includes(slide.columns)
+        ? slide.columns
+        : Math.min(Math.max(list.length, 2), 4);
+      const initials = (name) => String(name || '?').trim().split(/\s+/)
+        .slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+      const cells = list.map(pn => `
+        <div class="person">
+          ${pn?.src
+            ? `<img class="person-face" src="${esc(pn.src)}" alt="${esc(pn.name || '')}">`
+            : `<div class="person-face person-initials">${esc(initials(pn?.name))}</div>`}
+          <div class="person-name">${esc(pn?.name || '')}</div>
+          ${pn?.role ? `<div class="person-role">${esc(pn.role)}</div>` : ''}
+        </div>`).join('');
+      el.innerHTML = `
+        ${slide.heading ? `<div class="s-heading">${esc(slide.heading)}</div>` : ''}
+        <div class="people-grid cols-${cols}">${cells}</div>`;
+      break;
+    }
+    case 'checklist': {
+      const STATE = { done: '✓', doing: '◐', blocked: '✕', todo: '○' };
+      const items = (slide.items || []).map(it => {
+        const st = STATE[it?.state] ? it.state : 'todo';
+        return `<li class="check-item is-${st}">
+          <span class="check-mark">${STATE[st]}</span>
+          <span class="check-body">
+            <span class="check-label">${inlineMd(it?.label || '')}</span>
+            ${it?.note ? `<span class="check-note">${inlineMd(it.note)}</span>` : ''}
+          </span>
+          <span class="check-state">${st}</span>
+        </li>`;
+      }).join('');
+      el.innerHTML = `
+        ${slide.heading ? `<div class="s-heading">${esc(slide.heading)}</div>` : ''}
+        <ul class="check-list">${items}</ul>`;
+      break;
+    }
+    case 'compare': {
+      /* Two frames sharing one caption. Either side may be missing its src and
+         still hold its place, which is how a before/after gets built. */
+      const pane = (side, def) => `
+        <figure class="cmp-pane">
+          <figcaption class="cmp-label">${esc(def?.label || side)}</figcaption>
+          <div class="cmp-frame fit-${slide.fit === 'contain' ? 'contain' : 'cover'}">
+            ${mediaFrame(def || {})}
+          </div>
+        </figure>`;
+      el.innerHTML = `
+        ${slide.heading ? `<div class="s-heading">${esc(slide.heading)}</div>` : ''}
+        <div class="cmp-panes">
+          ${pane('Before', slide.before)}
+          ${pane('After', slide.after)}
+        </div>
+        ${slide.caption ? `<div class="table-caption">${esc(slide.caption)}</div>` : ''}`;
+      break;
+    }
+    case 'appendix': {
+      el.innerHTML = `
+        <div class="appendix-tag">Appendix</div>
+        <div class="s-heading">${esc(slide.heading || 'Backup Slides')}</div>
+        <div class="accent-bar" style="margin:14px 0"></div>
+        ${slide.subtitle ? `<div class="s-subtitle">${esc(slide.subtitle)}</div>` : ''}`;
+      break;
+    }
     default:
       el.className = 'slide slide-state';
       el.innerHTML = `<p>Unknown slide type: <strong>${esc(type)}</strong></p>`;
@@ -196,7 +417,26 @@ export function renderSlide(slide, index, total) {
   const pat = slide.pattern !== undefined ? slide.pattern : state.meta.pattern;
   if (pat && pat !== 'none') applyPattern(el, pat);
 
-  el.appendChild(num);
+  /* The rail: a deck-level note on the left, the handling label and page count
+     on the right. When the deck declares neither, the bare slide number stays
+     exactly where it was. Title slides carry their own meta line, so the rail
+     starts on slide two; any slide can opt out with `rail: false`. */
+  const railText = state.meta.footer;
+  const railClass = state.meta.classification;
+  if ((railText || railClass) && type !== 'title' && slide.rail !== false) {
+    const rail = document.createElement('div');
+    rail.className = 'slide-rail';
+    rail.innerHTML =
+      `<span class="rail-note">${esc(railText || '')}</span>` +
+      `<span class="rail-right">` +
+        (railClass ? `<span class="rail-class">${esc(railClass)}</span>` : '') +
+        `<span class="rail-num">${state.slides[index] === slide ? pageLabel(state.slides, index) : `${index + 1} / ${total}`}</span>` +
+      `</span>`;
+    el.appendChild(rail);
+    el.classList.add('has-rail');
+  } else {
+    el.appendChild(num);
+  }
 
   // Watermark logo on every non-title slide; logo_pos picks its corner
   if (state.meta.logo && state.meta.logo_all && type !== 'title') {
@@ -223,7 +463,7 @@ export function showEmpty() {
   document.getElementById('stage').innerHTML = `
     <div class="stage-empty">
       <div class="s-icon">\uD83D\uDCC4</div>
-      <p>Paste YAML to get started<br>or click \u2295 Sample above</p>
+      <p>Paste YAML to get started<br>or open the \u2733 Catalog above</p>
     </div>`;
   document.getElementById('slide-count-badge').textContent = '';
 }
@@ -261,7 +501,15 @@ export function updateWarnings(ws) {
     return;
   }
   el.className = 'warnings-bar';
-  el.innerHTML = ws.map(w => `
+  /* A count and a legend, because the bar clips at a fixed height and used to
+     hide the rest with no sign that anything was missing, and because error,
+     warning and note were distinguishable only by colour. */
+  const warns = ws.filter(w => w.level === 'warn').length;
+  const notes = ws.length - warns;
+  const summary = `<div class="warning-summary">${
+    warns ? `<b>${warns}</b> to fix` : 'nothing to fix'
+  }${notes ? ` · ${notes} note${notes === 1 ? '' : 's'}` : ''}</div>`;
+  el.innerHTML = summary + ws.map(w => `
     <div class="warning-item lvl-${w.level}">
       <span class="warning-badge">${w.slide ? `slide ${w.slide}` : 'deck'}</span>
       <span>${esc(w.msg)}</span>
@@ -285,7 +533,17 @@ export function renderFilmstrip() {
       <div class="film-type">${type}</div>
       <div class="film-num">${i + 1}</div>
       <div class="film-text">${esc(label.substring(0, 28))}</div>`;
-    thumb.onclick = () => { state.current = i; showSlide(i); updateCounter(); syncFilmstrip(); };
+    const go = () => { state.current = i; showSlide(i); updateCounter(); syncFilmstrip(); };
+    thumb.onclick = go;
+    /* Reachable and operable without a mouse: a thumbnail is a button, so it
+       announces itself as one and answers Enter and Space. */
+    thumb.tabIndex = 0;
+    thumb.setAttribute('role', 'button');
+    thumb.setAttribute('aria-label', `Slide ${i + 1}, ${type}${label ? ': ' + label.substring(0, 40) : ''}`);
+    thumb.setAttribute('aria-current', i === state.current ? 'true' : 'false');
+    thumb.onkeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+    };
     strip.appendChild(thumb);
   });
 }
