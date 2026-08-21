@@ -572,6 +572,19 @@ hands-on (code × N) → recap (bullets) → next steps (cta)
 Six export paths in the app: PPTX, PDF/HTML via Marp CLI, standalone HTML, Reveal.js HTML,
 GitHub Pages bundle, gallery manager.
 
+### Markdown import (js/markdown-import.js)
+
+The front door for the searched phrase "markdown to powerpoint": the `⇤ Markdown` toolbar
+button opens a paste box, and `markdownToDeck()` converts Marp or CommonMark into the deck object,
+which is dumped to the YAML contract and rendered. Slides split on a line of `---` (Marp's page
+break, read as front matter when it leads the file). Headings, bullets, code fences, blockquotes,
+tables and image-only slides map to `title` / `bullets` / `code` / `quote` / `table` / `image` /
+`divider`; front-matter `title`/`subtitle`/`author`/`date` become deck meta. The module is
+DOM-free and returns `{ deck, warnings }`, so `markdown-import.test.mjs` converts samples, dumps
+them and runs the output through `validate.mjs` (a conversion that produces an unreadable or
+warning-laden deck fails there, not in a browser). The audit still runs after import, so a weak
+heading is flagged the same way it is for a hand-written deck.
+
 ### Share links (js/share.js)
 
 The deck travels in the URL, mirroring proctor-site's contract: **`#d=<base64url yaml>`**

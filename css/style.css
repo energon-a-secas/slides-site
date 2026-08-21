@@ -1076,6 +1076,17 @@ body {
 .receipt-foot { margin-top: 14px; font-size: .74rem; color: var(--text-dim); }
 .receipt-foot code { font-size: .72rem; }
 
+/* Markdown import textarea */
+.md-input {
+  width: 100%; min-height: 220px; margin-top: 14px; resize: vertical;
+  padding: 12px 14px; border-radius: 10px;
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  background: var(--surface-1, rgba(255,255,255,.03));
+  color: var(--text-primary, #f9f9f9);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .82rem; line-height: 1.5;
+}
+.md-input:focus { outline: none; border-color: var(--accent, #0063e5); }
+
 .welcome-choices { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
 .welcome-choice {
   display: flex; flex-direction: column; gap: 4px; text-align: left;

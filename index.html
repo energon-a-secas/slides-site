@@ -6,16 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <title>Presentation Sage | YAML Slide Builder</title>
-  <meta name="description" content="Write slides as YAML, export to PPTX, HTML, or Marp. A built-in auditor flags bullet overload and pacing gaps before you present">
-  <meta property="og:title" content="Presentation Sage: YAML Slide Builder">
-  <meta property="og:description" content="Write slides in YAML, export to PPTX, HTML, or Marp. Audit pacing and density before you present">
+  <title>Presentation Sage | Markdown to PowerPoint</title>
+  <meta name="description" content="Turn Markdown or YAML into editable PowerPoint, free and no login, with a built-in check that the exported file opens clean everywhere">
+  <meta property="og:title" content="Presentation Sage: Markdown to PowerPoint">
+  <meta property="og:description" content="Paste Markdown or write YAML, export editable PowerPoint, HTML or Marp. Free, no login, and it proves the file is clean">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://slides.neorgon.com/">
   <meta property="og:site_name" content="Neorgon">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Presentation Sage: YAML Slide Builder">
-  <meta name="twitter:description" content="Write slides in YAML, export to PPTX, HTML, or Marp. Audit pacing and density before you present">
+  <meta name="twitter:title" content="Presentation Sage: Markdown to PowerPoint">
+  <meta name="twitter:description" content="Paste Markdown or write YAML, export editable PowerPoint, HTML or Marp. Free, no login, and it proves the file is clean">
   <meta name="twitter:image" content="https://slides.neorgon.com/og-preview.jpg">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://slides.neorgon.com/">
@@ -40,7 +40,7 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "Presentation Sage",
-    "description": "Write slides as YAML, export to PPTX, HTML, or Marp. A built-in auditor flags bullet overload and pacing gaps",
+    "description": "Turn Markdown or YAML into editable PowerPoint, free and no login, with a built-in check that the exported file opens clean",
     "url": "https://slides.neorgon.com/",
     "applicationCategory": "ProductivityApplication",
     "operatingSystem": "Any",
@@ -59,7 +59,7 @@
       <a href="https://neorgon.com/" target="_blank" rel="noopener noreferrer"><img src="https://cdn.neorgon.org/v1.0.0/energon-classic-logo.png" class="header-logo-img" alt="Neorgon"></a>
       <a href="./" class="header-title-link">
         <h1>Presentation Sage</h1>
-        <div class="header-subtitle">Write slides as YAML, export anywhere</div>
+        <div class="header-subtitle">Markdown or YAML to editable PowerPoint</div>
       </a>
     </div>
     <div class="header-right">
@@ -87,6 +87,7 @@
 
     <button class="btn btn-sm btn-primary" onclick="openCatalog('decks')" title="Twelve complete decks and four deck structures to start from">⊞ Examples</button>
     <button class="btn btn-sm" onclick="openCatalog('style')" title="Themes, gradients, patterns, brand colours and deck setup">✳ Design</button>
+    <button class="btn btn-sm" id="md-import-btn" title="Paste Marp or Markdown, convert to a deck you can export to PowerPoint">⇤ Markdown</button>
 
     <div class="tb-menu">
       <button class="btn btn-sm" data-menu-toggle aria-haspopup="true" aria-expanded="false">↓ Export</button>
@@ -182,6 +183,16 @@
   </dialog>
 
   <!-- First visit: start from something, or from nothing -->
+  <dialog class="neo-dialog neo-dialog-wide" id="md-dialog" aria-labelledby="md-title">
+    <h3 id="md-title">Paste Markdown</h3>
+    <p>Marp or CommonMark. Slides split on a line of <code>---</code>. Headings, bullets, code fences, quotes, tables and images convert to slide types; the audit still runs, and you can export to real editable PowerPoint after.</p>
+    <textarea id="md-input" class="md-input" spellcheck="false" placeholder="# My deck&#10;A one-line subtitle&#10;&#10;---&#10;&#10;## First point&#10;&#10;- Something that changed&#10;- Why it matters"></textarea>
+    <div class="neo-dialog-actions">
+      <button class="btn btn-sm" id="md-cancel">Cancel</button>
+      <button class="btn btn-sm btn-primary" id="md-convert">Convert to deck</button>
+    </div>
+  </dialog>
+
   <dialog class="neo-dialog neo-dialog-wide" id="receipt-dialog" aria-labelledby="receipt-title">
     <h3 id="receipt-title">Export receipt</h3>
     <p class="receipt-sub" id="receipt-sub"></p>

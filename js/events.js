@@ -5,6 +5,7 @@
 import { state, THEMES } from './state.js';
 import { showToast } from './utils.js';
 import { copyShareLink } from './share.js';
+import { markdownToDeck } from './markdown-import.js';
 /* Late-bound to avoid an import cycle: catalog.js imports from this module. */
 const openCatalogFromEvents = (tab) => window.openCatalog?.(tab);
 import { showSlide, updateCounter, syncFilmstrip, renderFilmstrip, update } from './render.js';
@@ -171,6 +172,9 @@ export function initEvents() {
 
   document.getElementById('logo-file-input').addEventListener('change', onLogoFile);
   document.getElementById('share-link-btn').addEventListener('click', copyShareLink);
+  document.getElementById('md-import-btn').addEventListener('click', () => document.getElementById('md-dialog').showModal());
+  document.getElementById('md-cancel').addEventListener('click', () => document.getElementById('md-dialog').close());
+  document.getElementById('md-convert').addEventListener('click', convertMarkdown);
 
   // Tab / Shift+Tab → indent / dedent for YAML
   yamlInput.addEventListener('keydown', (e) => {
@@ -287,6 +291,24 @@ export function initEvents() {
 }
 
 /* ── Expose all handlers to window for inline onclick attributes ───── */
+
+/* Paste Markdown (Marp or CommonMark) and convert it to the deck YAML the
+   player renders. The audit still runs after, so weak headings are caught the
+   same way they are for a hand-written deck. */
+function convertMarkdown() {
+  const md = document.getElementById('md-input').value;
+  if (!md.trim()) { showToast('Paste some Markdown first'); return; }
+  const { deck, warnings } = markdownToDeck(md);
+  if (!deck.presentation.slides.length) { showToast(warnings[0] || 'No slides found'); return; }
+  document.getElementById('yaml-input').value = jsyaml.dump(deck, { lineWidth: 100 });
+  update();
+  document.getElementById('md-dialog').close();
+  document.getElementById('md-input').value = '';
+  const n = deck.presentation.slides.length;
+  showToast(warnings.length
+    ? `Converted ${n} slide${n === 1 ? '' : 's'}, ${warnings.length} note${warnings.length === 1 ? '' : 's'}. Run Audit`
+    : `Converted ${n} slide${n === 1 ? '' : 's'}. Now edit or export`);
+}
 
 export function exposeGlobals() {
   window.setTheme        = setTheme;

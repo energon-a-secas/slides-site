@@ -15,6 +15,13 @@
 - [Export checker](https://slides.neorgon.com/check-exports.mjs): The app shows these checks as a receipt whenever you export PPTX; this is the same module from a terminal. Checks the exported FILE rather than the deck: strings that never made it, images whose bytes do not match their extension, local paths leaking into artifacts, shapes off the page. `node check-exports.mjs <deck.yaml | dir>`, exit 0 clean · 1 defects · 2 could not run
 - [Deck validator](https://slides.neorgon.com/validate.mjs): Density checks without the player: node validate.mjs <deck.yaml | dir> validates one deck or every deck in a repo; --fresh checks a checkout still matches the live rules (standalone, fetches the player's own rules when run outside a checkout)
 
+## From Markdown
+
+Already have a Marp or CommonMark deck? The `⇤ Markdown` button (or paste into the editor after
+converting) turns it into the YAML contract, then exports to editable PowerPoint with the receipt.
+Slides split on a line of `---`; headings, bullets, code fences, quotes, tables and images map to
+slide types. You do not need to learn the YAML to start: paste Markdown, then refine.
+
 ## Deep links: open a deck in someone's browser
 
 Three URL forms load a deck straight into the player. Emit one instead of telling a person
