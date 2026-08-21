@@ -12,7 +12,7 @@
 - [Worked example](https://slides.neorgon.com/template.yaml): A complete deck that validates clean, start from this
 - [Deck builder](https://slides.neorgon.com/render-deck.mjs): Build PPTX, PDF, HTML or Markdown from a deck without opening the app. See "Generating files" below
 - [deckcraft skill](https://github.com/LucianoAdonis/neorgon-forge): Writes and critiques decks for this tool, covering the argument the density audit cannot check. See "Writing a deck that argues" below
-- [Export checker](https://slides.neorgon.com/check-exports.mjs): Checks the exported FILE rather than the deck: strings that never made it, images whose bytes do not match their extension, local paths leaking into artifacts, shapes off the page. `node check-exports.mjs <deck.yaml | dir>`, exit 0 clean · 1 defects · 2 could not run
+- [Export checker](https://slides.neorgon.com/check-exports.mjs): The app shows these checks as a receipt whenever you export PPTX; this is the same module from a terminal. Checks the exported FILE rather than the deck: strings that never made it, images whose bytes do not match their extension, local paths leaking into artifacts, shapes off the page. `node check-exports.mjs <deck.yaml | dir>`, exit 0 clean · 1 defects · 2 could not run
 - [Deck validator](https://slides.neorgon.com/validate.mjs): Density checks without the player: node validate.mjs <deck.yaml | dir> validates one deck or every deck in a repo; --fresh checks a checkout still matches the live rules (standalone, fetches the player's own rules when run outside a checkout)
 
 ## Deep links: open a deck in someone's browser

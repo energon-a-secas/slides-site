@@ -611,6 +611,13 @@ Four checks, all dependency-free:
 - **Colour ordering.** For all ten themes, `dim < muted < body <= text` after compositing alpha
   against the background. This is arithmetic on the theme table and needs no file at all.
 
+**The app shows the same checks as a receipt.** Export → PowerPoint builds the file to a blob,
+downloads it, then inspects those exact bytes with JSZip and opens the receipt dialog: editable
+text runs, authored strings present, image bytes matching their extension, no local paths, nothing
+off the page, notes carried. Checks 1 to 3 live in `js/receipt.js`, DOM-free over a tiny zip
+adapter; `check-exports.mjs` imports the same module over `unzip`, so the receipt and the CLI cannot
+disagree. Change a check there, never in either caller.
+
 Exit codes match `validate.mjs`: **0** clean or observations only, **1** defects, **2** could not
 run. Gate a build with both:
 

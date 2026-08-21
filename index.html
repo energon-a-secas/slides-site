@@ -182,6 +182,14 @@
   </dialog>
 
   <!-- First visit: start from something, or from nothing -->
+  <dialog class="neo-dialog neo-dialog-wide" id="receipt-dialog" aria-labelledby="receipt-title">
+    <h3 id="receipt-title">Export receipt</h3>
+    <p class="receipt-sub" id="receipt-sub"></p>
+    <div id="receipt-body"></div>
+    <p class="receipt-foot">Checked on the file, not the deck. The same checks run from a terminal: <code>node check-exports.mjs deck.yaml</code></p>
+    <div class="neo-dialog-actions"><button class="btn btn-sm btn-primary" id="receipt-close">Done</button></div>
+  </dialog>
+
   <dialog class="neo-dialog neo-dialog-wide" id="welcome-dialog">
     <h3>Write slides as YAML</h3>
     <p>The editor on the left is the deck. Everything else reads from it.</p>

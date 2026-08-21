@@ -94,7 +94,8 @@ const { THEMES, themeWithBrand } = await import(join(HERE, 'js/state.js'));
 const { deckToMarp, deckToPptx } = await import(join(HERE, 'js/serialize.js'));
 
 async function loadDeck(file) {
-  const { default: yaml } = await need('js-yaml', 'reading the deck');
+  const yamlNs = await need('js-yaml', 'reading the deck');
+  const yaml = yamlNs.default || yamlNs;   // js-yaml v5's ESM build exports no default
   const doc = yaml.load(await readFile(file, 'utf8'));
   if (!doc?.presentation) throw new Error(`${file}: no "presentation:" root key`);
   const p = doc.presentation;

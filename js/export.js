@@ -6,6 +6,7 @@ import { state, themeWithBrand, resolveBg } from './state.js';
 import { esc, slug, download, showToast } from './utils.js';
 import { renderSlide } from './render.js';
 import { deckToMarp, deckToPptx } from './serialize.js';
+import { inspectPptx, zipFromJSZip } from './receipt.js';
 
 /* ── YAML export ──────────────────────────────────────────────────────── */
 
@@ -121,7 +122,7 @@ function svgToPngDataUri(src) {
 
 /* ── PPTX export ──────────────────────────────────────────────────────── */
 
-export function exportPPTX() {
+export async function exportPPTX() {
   if (!state.slides.length) { showToast('Load a presentation first'); return; }
   if (typeof PptxGenJS === 'undefined') {
     showToast('Export library failed to load'); return;
@@ -134,6 +135,50 @@ export function exportPPTX() {
   const pptx = deckToPptx(new PptxGenJS(), state.meta, state.slides, t, {
     resolveImage: (src) => (src && /\.svgz?($|\?)/i.test(src)) ? svgToPngDataUri(src) : src,
   });
-  pptx.writeFile({ fileName: `${slug(state.meta)}.pptx` });
+  const fileName = `${slug(state.meta)}.pptx`;
+  /* Build to a blob first so the bytes the visitor downloads are the bytes the
+     receipt inspected. If the blob path fails for any reason, fall back to the
+     plain download: the file always comes first, the receipt is extra. */
+  let blob = null;
+  try { blob = await pptx.write({ outputType: 'blob' }); } catch { blob = null; }
+  if (!blob) { pptx.writeFile({ fileName }); showToast('PPTX exported!'); return; }
+  download(blob, fileName, 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
   showToast('PPTX exported!');
+  try {
+    if (typeof JSZip === 'undefined') return;
+    const z = await JSZip.loadAsync(blob);
+    let deck = null;
+    try { deck = jsyaml.load(document.getElementById('yaml-input').value)?.presentation || null; } catch { deck = null; }
+    showReceipt(await inspectPptx(zipFromJSZip(z), deck, fileName), fileName, blob.size);
+  } catch (e) {
+    console.warn('Export receipt skipped:', e);
+  }
+}
+
+/* ── The receipt dialog ───────────────────────────────────────────────────
+   Same checks as check-exports.mjs (they share js/receipt.js), shown on the
+   file that was just downloaded. Facts first, so a clean export says what was
+   verified rather than just "no problems"; findings after, in audit levels. */
+function showReceipt(result, fileName, bytes) {
+  const dlg = document.getElementById('receipt-dialog');
+  if (!dlg) return;
+  const { findings, facts } = result;
+  const warns = findings.filter(f => f.level === 'warn');
+  const has = (re) => findings.some(f => f.level === 'warn' && re.test(f.msg));
+  const fact = (ok, text) => `<div class="receipt-fact ${ok ? 'ok' : 'bad'}"><span class="glyph">${ok ? '\u2713' : '\u2715'}</span><span>${esc(text)}</span></div>`;
+  const rows = [];
+  rows.push(fact(facts.textRuns > 0, `Editable text: ${facts.textRuns} text run${facts.textRuns === 1 ? '' : 's'} across ${facts.slides} slide${facts.slides === 1 ? '' : 's'}, real text boxes, not pictures of slides`));
+  if (facts.strings) rows.push(fact(facts.missing === 0, `Authored strings present: ${facts.strings - facts.missing} of ${facts.strings}`));
+  if (facts.media) rows.push(fact(facts.mediaOk === facts.media, `Images: ${facts.mediaOk} of ${facts.media} are what their extension says`));
+  rows.push(fact(!has(/local filesystem path/), 'No local file paths inside the file'));
+  if (facts.pageIn) rows.push(fact(!has(/off the page/) && !has(/overlap/), `Page ${facts.pageIn} in, nothing off the page, no text boxes colliding`));
+  rows.push(facts.notes ? fact(true, `Speaker notes carried on ${facts.notes} slide${facts.notes === 1 ? '' : 's'}`) : `<div class="receipt-fact info"><span class="glyph">\u2013</span><span>No speaker notes in this deck</span></div>`);
+  const issues = findings.length
+    ? `<div class="receipt-findings">${findings.map(f => `<div class="receipt-issue ${f.level}"><span class="receipt-level">${f.level}</span>${esc(f.msg)}</div>`).join('')}</div>`
+    : '';
+  dlg.querySelector('#receipt-title').textContent = warns.length ? `${warns.length} defect${warns.length === 1 ? '' : 's'} in the exported file` : 'Clean export receipt';
+  dlg.querySelector('#receipt-sub').textContent = `${fileName} \u00B7 ${(bytes / 1024).toFixed(0)} KB \u00B7 checked after building, before you open it`;
+  dlg.querySelector('#receipt-body').innerHTML = `<div class="receipt-facts">${rows.join('')}</div>${issues}`;
+  dlg.querySelector('#receipt-close').onclick = () => dlg.close();
+  if (!dlg.open) dlg.showModal();
 }

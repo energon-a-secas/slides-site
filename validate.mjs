@@ -86,7 +86,9 @@ if (fresh) {
 // ── js-yaml: local install first, the player's pinned CDN build second ──────
 let jsyaml;
 try {
-  jsyaml = (await import('js-yaml')).default;
+  const m = await import('js-yaml');
+  jsyaml = m.default || m;   // js-yaml v5's ESM build exports no default
+  if (typeof jsyaml.load !== 'function') throw new Error('js-yaml has no load()');
 } catch {
   const cache = join(tmpdir(), 'slides-site-validate');
   mkdirSync(cache, { recursive: true });
