@@ -15,6 +15,26 @@
 - [Export checker](https://slides.neorgon.com/check-exports.mjs): Checks the exported FILE rather than the deck: strings that never made it, images whose bytes do not match their extension, local paths leaking into artifacts, shapes off the page. `node check-exports.mjs <deck.yaml | dir>`, exit 0 clean · 1 defects · 2 could not run
 - [Deck validator](https://slides.neorgon.com/validate.mjs): Density checks without the player: node validate.mjs <deck.yaml | dir> validates one deck or every deck in a repo; --fresh checks a checkout still matches the live rules (standalone, fetches the player's own rules when run outside a checkout)
 
+## Deep links: open a deck in someone's browser
+
+Three URL forms load a deck straight into the player. Emit one instead of telling a person
+to paste YAML by hand:
+
+- `https://slides.neorgon.com/#d=<base64url of the YAML>`: the deck itself travels in the
+  link. Base64url is standard base64 with `+`→`-`, `/`→`_`, padding stripped, over the
+  UTF-8 bytes. Best under ~8 KB of payload; the fragment never reaches any server.
+- `https://slides.neorgon.com/?src=<https url>`: the player fetches the YAML from that URL
+  (a raw gist, a GitHub Pages file, any https host that allows CORS). Right choice for big
+  decks and for decks that keep changing at the source.
+- `?yaml=<url-encoded yaml>`: legacy, still works, but prefer `#d=`.
+
+Add `via=<yourname>` to say who sent the visitor; it is counted, never displayed. It goes
+in the query string, so on the hash form it comes BEFORE the fragment:
+`https://slides.neorgon.com/?via=agent#d=<payload>`, and on the src form it is just another
+parameter: `?src=<url>&via=agent`. Never append it inside `#d=`; that corrupts the payload.
+If you are an agent or a skill emitting these links, use `via=agent`. The same contract runs on Proctor (exams): `#t=` and `?src=` at
+https://proctor.neorgon.com/llms.txt
+
 ## Example decks
 
 Twelve complete decks, each validating clean. Fetch one and edit it rather than starting from an empty file. Browse them at https://slides.neorgon.com/deck-library/

@@ -572,6 +572,17 @@ hands-on (code × N) → recap (bullets) → next steps (cta)
 Six export paths in the app: PPTX, PDF/HTML via Marp CLI, standalone HTML, Reveal.js HTML,
 GitHub Pages bundle, gallery manager.
 
+### Share links (js/share.js)
+
+The deck travels in the URL, mirroring proctor-site's contract: **`#d=<base64url yaml>`**
+(built by the toolbar's `⤴ Share` button; refused over ~32 KB of payload, warned over 8 KB),
+**`?src=<https url>`** (fetched, CORS permitting), and legacy **`?yaml=`** (pathfinder still
+emits it; keep it working). `loadFromUrl()` in `js/share.js` owns all three and app.js falls
+back to localStorage only when it returns false. The hash is cleaned with `replaceState`
+after a successful load so an edited deck cannot diverge from a stale URL payload. A `?via=`
+marker on arrival is counted by the header kit's analytics (when enabled), never read here.
+The public contract is documented in `llms.txt`; change one only with the other.
+
 **📖 Read `docs/references/export-workflow.md` when** the user wants to export a deck. It holds the exact toolbar buttons, the `marp` CLI commands, and the GitHub Pages multi-talk repo layout.
 
 ### Checking what the export actually contains

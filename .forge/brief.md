@@ -125,6 +125,8 @@ Round 8: logo stamp/size/placeholder
 
 - `2026-08-20 10:27` The overlap check needed narrowing before it was worth anything. A naive box-intersection test fired on almost every slide, because pptxgenjs draws text on top of shapes by design: a timeline dot, a grid card, an initials circle are all a rect or ellipse with a run centred over it. Parsing per p:sp and requiring BOTH boxes to contain an a:t element cut it to four real collisions, every one of which was a genuine defect. Verified it still has teeth afterwards with a hand-built pptx containing two overlapping text runs.
 
+- `2026-08-20 11:26` Lower-severity review items fixed and everything pushed. Filmstrip thumbnails are now buttons with role, tabindex, aria-label and Enter/Space; warnings, counter and stage carry live regions; the warnings bar gained a sticky count and scrolls instead of hiding findings silently; the workspace stacks below 900px, where the two panes had been 195px each; and Marp stats render as a side-by-side table row rather than a vertical list of small headings. One regression caught in a mobile screenshot before pushing: moving .slide-num into the graphics-safe band put it exactly where the title slide's date sat, so the two printed over each other in the player, the same collision class just fixed in PPTX. Three scoped commits, one per repo, staging only this session's files: the forge's in-progress penname work and the root repo's untracked screenshots were deliberately left alone.
+
 ## Measured
 
 <!-- Numbers you actually observed, with how you got them. An estimate recorded
@@ -199,3 +201,5 @@ gives it a fixed home.
 
 
 _Closed 2026-08-19 21:31._
+
+_Closed 2026-08-20 11:26._

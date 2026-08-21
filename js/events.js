@@ -4,6 +4,7 @@
 
 import { state, THEMES } from './state.js';
 import { showToast } from './utils.js';
+import { copyShareLink } from './share.js';
 /* Late-bound to avoid an import cycle: catalog.js imports from this module. */
 const openCatalogFromEvents = (tab) => window.openCatalog?.(tab);
 import { showSlide, updateCounter, syncFilmstrip, renderFilmstrip, update } from './render.js';
@@ -169,6 +170,7 @@ export function initEvents() {
   const yamlInput = document.getElementById('yaml-input');
 
   document.getElementById('logo-file-input').addEventListener('change', onLogoFile);
+  document.getElementById('share-link-btn').addEventListener('click', copyShareLink);
 
   // Tab / Shift+Tab → indent / dedent for YAML
   yamlInput.addEventListener('keydown', (e) => {

@@ -7,6 +7,7 @@ import { update, initResizeObservers } from './render.js';
 import { initEvents, exposeGlobals } from './events.js';
 import { initCatalog } from './catalog.js';
 import { initOnboarding } from './onboard.js';
+import { loadFromUrl } from './share.js';
 
 // Expose all onclick handlers to the global scope (used by HTML attributes)
 exposeGlobals();
@@ -26,20 +27,9 @@ initResizeObservers();
 initEvents();
 initCatalog();
 
-// Restore saved presentation from localStorage, or load from URL ?yaml=... parameter
-const params = new URLSearchParams(location.search);
-const urlYaml = params.get('yaml');
-if (urlYaml) {
-  try {
-    // URLSearchParams.get() has already decoded this. Decoding again threw
-    // URIError on any lone '%', which is why five of the twelve library decks
-    // opened an empty editor: they contain percentages.
-    document.getElementById('yaml-input').value = urlYaml;
-    update();
-  } catch (e) {
-    console.error('Failed to decode YAML from URL', e);
-  }
-} else {
+// Load a deck the URL carries (#d= payload, ?src= fetch, legacy ?yaml=),
+// else restore the last session from localStorage.
+if (!loadFromUrl()) {
   const saved = localStorage.getItem('presentation-sage');
   if (saved) {
     document.getElementById('yaml-input').value = saved;

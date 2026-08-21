@@ -2,12 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.jsdelivr.net https://plausible.io; style-src 'self' 'unsafe-inline' https://cdn.neorgon.org; img-src 'self' data: blob: https:; connect-src 'self' blob: https://plausible.io">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.jsdelivr.net https://gc.zgo.at https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.neorgon.org; img-src 'self' data: blob: https:; connect-src 'self' blob: https:">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <!-- Privacy-first analytics -->
-  <script defer data-domain="slides.neorgon.com" src="https://plausible.io/js/script.js"></script>
   <title>Presentation Sage | YAML Slide Builder</title>
   <meta name="description" content="Write slides as YAML, export to PPTX, HTML, or Marp. A built-in auditor flags bullet overload and pacing gaps before you present">
   <meta property="og:title" content="Presentation Sage: YAML Slide Builder">
@@ -108,6 +106,8 @@
         <button onclick="openGallery()">Gallery<span>manage what you published</span></button>
       </div>
     </div>
+
+    <button class="btn btn-sm" id="share-link-btn" title="Copy a link that carries this deck: opening it loads the deck, no account, no upload">⤴ Share</button>
 
     <div class="sep"></div>
 
