@@ -722,6 +722,21 @@ them and the CLI imports the same module. A change to the PPTX layout reaches bo
 the whole reason the file exists. `js/state.js` reads `localStorage` through a `typeof` guard
 for the same reason: it has to import under Node.
 
+**The 500-line splits.** Five sibling modules exist so no JS file exceeds the fleet's
+500-line rule; each original file keeps its public API, so no importer changed:
+
+- `js/marp.js`: `deckToMarp()`, re-exported by `js/serialize.js` so both serializers still
+  arrive through one import path.
+- `js/pptx-layouts.js`: the content-layout PPTX emitters (agenda, table, grid, media, matrix,
+  people, checklist, compare); the switch in `deckToPptx()` delegates to it the same way it
+  already delegates the round-10 types to `js/blocks.js`.
+- `js/slide-html.js`: the player markup for the stateless slide types; `renderSlide()` in
+  `js/render.js` keeps the stateful cases (title, divider, agenda, the delegated block types).
+- `js/catalog-data.js`: the Catalog's static tables (sample slides, the "when to use it"
+  lines, deck structures, glyphs).
+- `js/yaml-edit.js`: every way the Catalog edits the textarea (slide and deck keys, the
+  nested `brand:` map, insert-at-cursor), imported by `js/catalog.js`.
+
 Two traps worth knowing:
 
 - **Root-absolute assets.** `/deck-library/assets/x.svg` means the site root in a browser and
