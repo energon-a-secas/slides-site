@@ -427,6 +427,23 @@ body {
   font-size: 14px; color: var(--sl-ts, #cacaca);
   margin-top: 6px; line-height: 1.4;
 }
+/* Per-step date above the axis. Once any step has one, every step renders the
+   row (empty ones included) so the dots stay on one line. */
+.timeline-date {
+  font-size: 11px; font-family: var(--mono);
+  color: var(--sl-muted, rgba(255,255,255,.45));
+  min-height: 15px; margin-bottom: 6px;
+}
+/* The connector line runs through the dot centres, which move down by the
+   date row's height when the track carries dates. */
+.timeline-track.has-dates .timeline-step::after { top: 37px; }
+/* A milestone: accent ring and a star instead of the numbered dot */
+.timeline-dot.is-mark {
+  background: transparent;
+  border: 2px solid var(--sl-accent, #0063e5);
+  color: var(--sl-accent, #0063e5);
+  font-size: 16px;
+}
 
 /* Columns (two-column text) slide */
 .slide-type-columns { justify-content: flex-start; }
@@ -716,6 +733,132 @@ body {
 .slide-type-appendix .s-heading {
   border-bottom: 0; padding-bottom: 0; font-size: 34px;
 }
+
+/* Process slide: numbered step cards with a header band, a body, and a meta
+   line for the target date and owner. Columns flow reads left to right; rows
+   flow stacks the cards as horizontal bands. One card carries is-current. */
+.slide-type-process { justify-content: flex-start; }
+.process-flow {
+  display: grid; gap: 14px; flex: 1; overflow: hidden;
+  margin-top: 12px; align-content: start;
+}
+.process-flow.flow-columns { grid-auto-flow: column; grid-auto-columns: 1fr; }
+.proc-card {
+  display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid var(--sl-border, rgba(255,255,255,.07));
+  border-radius: 8px; background: rgba(127,127,127,.07);
+}
+.proc-band {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; flex-shrink: 0;
+  background: rgba(127,127,127,.10);
+  border-bottom: 1px solid var(--sl-border, rgba(255,255,255,.07));
+}
+.proc-num {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  background: var(--sl-accent, #0063e5); color: var(--sl-on-accent, #fff);
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.proc-label { font-size: 14px; font-weight: 700; color: var(--sl-text, #fff); line-height: 1.25; }
+.proc-body {
+  padding: 10px 12px; flex: 1;
+  font-size: 13px; color: var(--sl-ts, #cacaca); line-height: 1.45;
+}
+.proc-meta {
+  display: flex; justify-content: space-between; gap: 10px;
+  padding: 8px 12px; flex-shrink: 0;
+  border-top: 1px solid var(--sl-border, rgba(255,255,255,.07));
+  font-size: 11px; font-family: var(--mono);
+  color: var(--sl-muted, rgba(255,255,255,.45));
+}
+.proc-card.is-current { border-color: var(--sl-accent, #0063e5); }
+.proc-card.is-current .proc-band { background: var(--sl-accent, #0063e5); }
+.proc-card.is-current .proc-band .proc-num {
+  background: var(--sl-on-accent, #fff); color: var(--sl-accent, #0063e5);
+}
+.proc-card.is-current .proc-label { color: var(--sl-on-accent, #fff); }
+/* Rows flow: band, body and meta become three cells of one horizontal band */
+.process-flow.flow-rows .proc-card { display: grid; grid-template-columns: 180px 1fr 170px; }
+.process-flow.flow-rows .proc-band { border-bottom: 0; border-right: 1px solid var(--sl-border, rgba(255,255,255,.07)); }
+.process-flow.flow-rows .proc-meta {
+  flex-direction: column; justify-content: center; align-items: flex-end; gap: 2px;
+  border-top: 0; border-left: 1px solid var(--sl-border, rgba(255,255,255,.07));
+}
+
+/* Chart slide: inline SVG drawn from the deck's own data (js/charts.js) */
+.slide-type-chart { justify-content: flex-start; }
+.chart-figure {
+  flex: 1; min-height: 0; overflow: hidden; margin-top: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.chart-figure svg { width: 100%; height: 100%; }
+
+/* Orgchart slide: root on top, children across, leaves stacked per branch */
+.slide-type-orgchart { justify-content: flex-start; }
+.org-chart {
+  flex: 1; overflow: hidden; margin-top: 8px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.org-node {
+  display: inline-flex; align-items: center; gap: 9px;
+  border: 1px solid var(--sl-border, rgba(255,255,255,.07));
+  border-top: 2px solid var(--sl-accent, #0063e5);
+  border-radius: 8px; padding: 7px 14px;
+  background: rgba(127,127,127,.08);
+}
+.org-who { display: flex; flex-direction: column; min-width: 0; }
+.org-name { font-size: 14px; font-weight: 700; color: var(--sl-text, #fff); line-height: 1.25; }
+.org-role { font-size: 11px; color: var(--sl-muted, rgba(255,255,255,.45)); line-height: 1.3; }
+.org-face {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  object-fit: cover;
+  display: flex; align-items: center; justify-content: center;
+}
+.org-face-sm { width: 22px; height: 22px; }
+/* Same initials-on-accent fallback the people slide uses */
+.org-face.org-initials {
+  background: var(--sl-accent, #0063e5); color: var(--sl-on-accent, #fff);
+  font-size: 13px; font-weight: 700; letter-spacing: .4px;
+}
+.org-face-sm.org-initials { font-size: 9px; }
+/* Connectors: a stub down from the root, a rail across, a stub into each
+   branch. Drawn with borders and pseudo-elements, no images. */
+.org-root { position: relative; }
+.org-root::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  width: 2px; height: 14px; margin-left: -1px;
+  background: var(--sl-dim, rgba(255,255,255,.22));
+}
+.org-children {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  gap: 16px; width: 100%; margin-top: 14px; min-height: 0;
+}
+.org-branch {
+  position: relative; display: flex; flex-direction: column;
+  align-items: center; padding-top: 14px; min-width: 0;
+}
+.org-branch::before {
+  content: ''; position: absolute; top: 0; left: 50%;
+  width: 2px; height: 14px; margin-left: -1px;
+  background: var(--sl-dim, rgba(255,255,255,.22));
+}
+.org-branch:not(:only-child)::after {
+  content: ''; position: absolute; top: 0; height: 2px;
+  left: -8px; right: -8px;
+  background: var(--sl-dim, rgba(255,255,255,.22));
+}
+.org-branch:first-child::after { left: 50%; }
+.org-branch:last-child::after { right: 50%; }
+.org-leaves {
+  list-style: none; margin-top: 10px; align-self: stretch;
+  display: flex; flex-direction: column; gap: 6px;
+  padding-left: 12px; margin-left: 18%;
+  border-left: 2px solid var(--sl-dim, rgba(255,255,255,.22));
+}
+.org-leaf { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.org-leaf .org-name { font-size: 12px; }
+.org-leaf .org-role { font-size: 10px; }
 
 /* Error / empty state */
 .slide-state {

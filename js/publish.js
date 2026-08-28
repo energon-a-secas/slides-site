@@ -4,12 +4,13 @@
 
 import { state, themeWithBrand, resolveBg } from './state.js';
 import { esc, slug, download, showToast } from './utils.js';
+import { revealBlock } from './blocks.js';
 
 const GALLERY_KEY = 'pres-sage-gallery';
 
 /* ── Reveal.js HTML generation ───────────────────────────────────────── */
 
-function buildRevealHTML(meta, slides, themeName) {
+export function buildRevealHTML(meta, slides, themeName) {
   const t = themeWithBrand(themeName, meta?.brand);
 
   const slideSections = slides.map(slide => {
@@ -128,18 +129,26 @@ function buildRevealHTML(meta, slides, themeName) {
   ${note}
 </section>`;
 
-      case 'timeline':
+      case 'timeline': {
+        const hasDates = (slide.steps || []).some(s2 => s2?.date);
         return `<section ${bgAttr}>
   ${slide.heading ? `<h2 style="font-size:1.5em;font-weight:700;color:${t.text};border-bottom:1px solid ${t.border};padding-bottom:14px">${esc(slide.heading)}</h2>` : ''}
   <div style="display:flex;gap:12px;margin-top:24px;align-items:flex-start">
     ${(slide.steps || []).map((s, i) => `<div style="flex:1;text-align:center">
-      <div style="width:32px;height:32px;border-radius:50%;background:${t.accent};color:#fff;font-size:0.65em;font-weight:700;display:inline-flex;align-items:center;justify-content:center">${i + 1}</div>
+      ${hasDates ? `<div style="font-size:0.5em;font-family:monospace;color:${t.muted};min-height:1.3em;margin-bottom:8px">${esc(s.date || '')}</div>` : ''}
+      <div style="width:32px;height:32px;border-radius:50%;background:${s.mark === true ? 'transparent' : t.accent};border:${s.mark === true ? `2px solid ${t.accent}` : 'none'};color:${s.mark === true ? t.accent : '#fff'};font-size:0.65em;font-weight:700;display:inline-flex;align-items:center;justify-content:center">${s.mark === true ? '★' : i + 1}</div>
       <div style="font-size:0.6em;font-weight:700;color:${t.accent};text-transform:uppercase;margin-top:10px">${esc(s.label || '')}</div>
       <div style="font-size:0.65em;color:${t.ts};margin-top:6px;line-height:1.4">${esc(s.text || '')}</div>
     </div>`).join('\n    ')}
   </div>
   ${note}
 </section>`;
+      }
+
+      case 'process':
+      case 'chart':
+      case 'orgchart':
+        return revealBlock(type, slide, t, note, bgAttr);
 
       case 'columns':
         return `<section ${bgAttr}>

@@ -32,6 +32,8 @@ export function deckStrings(node, out = []) {
       if (k.startsWith('logo')) continue;
       if (['type', 'src', 'background', 'pattern', 'theme', 'language',
            'fit', 'side', 'style', 'state', 'align', 'classification',
+           /* renderer knobs, never echoed as text */
+           'chart', 'flow',
            /* deck metadata: recorded for the audit, never rendered on a slide */
            'audience', 'outcome', 'duration', 'big_idea'].includes(k)) continue;
       deckStrings(v, out);
@@ -58,6 +60,10 @@ export async function inspectPptx(zip, deck, fileName = 'deck.pptx') {
   const slideXml = names.filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
     .sort((a, b) => +a.match(/(\d+)/)[1] - +b.match(/(\d+)/)[1]);
   const noteXml = names.filter(n => /^ppt\/notesSlides\/notesSlide\d+\.xml$/.test(n));
+  /* Chart series names, category labels and values live in their own chart
+     parts, not in the slide XML; without these the strings check would report
+     every chart slide as having lost its own data. */
+  const chartXml = names.filter(n => /^ppt\/charts\/[^/]+\.xml$/.test(n));
   const media = names.filter(n => /^ppt\/media\/\S+\.(png|jpe?g|svg)$/i.test(n));
 
   const facts = {
@@ -152,7 +158,9 @@ export async function inspectPptx(zip, deck, fileName = 'deck.pptx') {
   /* ── No string left behind ───────────────────────────────────────────── */
   if (deck) {
     const wanted = [...new Set(deckStrings(deck))];
-    const hay = [...slides.map(s => s.xml), ...notes].join('\n');
+    const charts = [];
+    for (const member of chartXml) charts.push(await zip.text(member));
+    const hay = [...slides.map(s => s.xml), ...notes, ...charts].join('\n');
     if (hay) {
       const flatHay = flat(hay);
       const checked = wanted.filter(w => w.length >= 6 && !GLYPH_WORDS.has(w.toLowerCase()));

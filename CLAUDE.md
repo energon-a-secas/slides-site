@@ -106,6 +106,8 @@ presentation:
       steps:
         - label: "Phase 1"
           text: "Description"
+          date: "2026-09"  # optional calendar label above the axis
+          mark: true       # optional: a starred milestone instead of a numbered dot
 
     - type: columns        # two-column free text (not bullets)
       heading: "..."
@@ -190,6 +192,39 @@ presentation:
       fit: cover           # cover (default) or contain
       bullets: ["..."]     # or text: "Paragraph..."
       caption: "..."       # optional
+
+    - type: process        # numbered step cards with per-step detail
+      heading: "..."       # distinct from timeline: this one carries a body per step
+      flow: columns        # columns (default) or rows
+      steps:
+        - label: "Shadow"  # the header band
+          text: "What happens in this step"
+          date: "2026-09"  # optional target date, on the footer meta line
+          owner: "Core"    # optional owner, same line
+          current: true    # marks where we are; one step at most
+
+    - type: chart          # bar, pie or line, drawn as inline SVG from the data
+      heading: "..."
+      chart: bar           # bar | pie | line
+      unit: "requests/day" # what the numbers are; the audit requires it
+      labels: ["Q1", "Q2", "Q3"]
+      series:              # up to 6; each name feeds the legend
+        - name: "API"
+          values: [120, 180, 240]
+      caption: "..."       # optional
+
+    - type: orgchart       # who reports to whom, up to 3 levels
+      heading: "..."
+      root:
+        name: "Dana Reyes"
+        role: "Director"
+        src: "./dana.jpg"  # optional headshot; an initials disc renders without it
+        reports:
+          - name: "Jane Smith"
+            role: "Platform lead"
+            reports:
+              - name: "Alex Kim"
+                role: "Data"
 ```
 
 ### Per-slide background
@@ -452,6 +487,10 @@ above it.
 | Matrix options / criteria | **≤ 5 / ≤ 7** | Past that nobody compares, they just look |
 | People per slide | **≤ 10** | More faces than that is an org chart |
 | Checklist items | **≤ 8** | Show what changed, not the whole backlog |
+| Timeline steps | **≤ 6** | Past six the axis is a table, not a road |
+| Process steps | **≤ 5** (rows flow: ≤ 4) | The cards become strips; also at most one `current: true` |
+| Chart series | **≤ 6**, `unit:` required, series named | A legend past six outgrows the chart; unnamed series cannot be read |
+| Orgchart nodes / levels | **≤ 12 / ≤ 3** | Past that it is unreadable on a projector; deeper levels flatten into their branch |
 
 These rules are mechanically checkable without opening the player:
 
@@ -466,7 +505,7 @@ human opens the deck. It checks density, not geometry, and says so on the last l
 
 **The geometry is measured in the app.** `js/geometry.js` renders every slide offscreen at its
 real 960x540 size, waits for `document.fonts.ready`, and reports any container whose
-`scrollHeight` exceeds its `clientHeight`: `.slide` and nineteen inner containers carry
+`scrollHeight` exceeds its `clientHeight`: `.slide` and twenty-two inner containers carry
 `overflow: hidden`, so content past the box does not spill or scroll, it disappears. The audit
 panel shows this as **Fit on the slide (measured)**, and it is the one check that measures what
 the density rules only approximate. A deck can pass every density rule and still clip: five
@@ -541,7 +580,9 @@ hands-on (code × N) → recap (bullets) → next steps (cta)
 | `cta` | Final slide: one action, stated directly |
 | `image` | Showing a screenshot, diagram, or photo: optional heading + caption |
 | `stats` | Big numbers / KPIs: up to 4 metrics side by side |
-| `timeline` | Step sequence: roadmaps, migration phases, project milestones |
+| `timeline` | Step sequence: roadmaps, migration phases, project milestones. `date:` labels a step above the axis; `mark: true` stars the milestone |
+| `process` | A sequence needing per-step detail: what happens, when, whose. Timeline is the axis of milestones; process is the cards |
+| `chart` | Bar, pie or line from YAML data: inline SVG in the player, a native editable chart in PPTX |
 | `columns` | Two-column free text: pros/cons narratives, before/after descriptions |
 | `agenda` | Second slide of a long talk: what it covers, ideally `auto` from the dividers |
 | `table` | A small comparison the audience will read across: options, costs, risks |
@@ -549,6 +590,7 @@ hands-on (code × N) → recap (bullets) → next steps (cta)
 | `media` | A screenshot or photo that needs 2 to 5 lines of interpretation beside it |
 | `matrix` | Which option wins: criteria down, options across, marks in the cells |
 | `people` | Introducing a team, with headshots or generated initials |
+| `orgchart` | Who reports to whom, up to 3 levels with connector lines; a flat team is `people` |
 | `checklist` | Status of a set of commitments: done, doing, blocked, to do |
 | `compare` | Two images that only mean something next to each other |
 | `appendix` | The end of the talk. Slides after it are backup, and play by other rules |
@@ -571,6 +613,28 @@ hands-on (code × N) → recap (bullets) → next steps (cta)
 
 Six export paths in the app: PPTX, PDF/HTML via Marp CLI, standalone HTML, Reveal.js HTML,
 GitHub Pages bundle, gallery manager.
+
+### Charts in each export
+
+The `chart` type maps differently per format, on purpose. The player, standalone HTML and
+Reveal draw the inline SVG (`js/charts.js`), so the chart themes with the deck. **PPTX uses
+pptxgenjs `addChart`** with the native bar/pie/line types: the numbers stay editable in
+PowerPoint, which an image never is. **Marp degrades to the underlying data table** and says
+so in an italic line above it; Markdown cannot draw, and a table that carries every number is
+the loud degrade, where an empty slide would be the silent one. The receipt's strings check
+reads `ppt/charts/*.xml` as well as the slide XML, so a chart that loses its series names or
+labels fails `check-exports.mjs` like any other dropped string. The round-10 types (process,
+chart, orgchart) live in `js/blocks.js`, all four format mappings of each type in one module.
+
+### Print / handout (standalone HTML)
+
+The standalone HTML export carries an `@media print` stylesheet: each slide becomes one page
+with its speaker note underneath, which is what the `note:` field was always for. On screen
+the note markup is held out of flow (`display: none`, plus a `display: contents` wrapper), and
+print restores it under the slide, the same trick the footer kit uses for its
+disclaimer-in-flow. The slide is scaled 0.7x, which fits both A4 and Letter, and backgrounds
+are forced with `print-color-adjust: exact` so a dark theme prints as designed. Open the
+exported file and print it; the player page itself has no print path.
 
 ### Markdown import (js/markdown-import.js)
 

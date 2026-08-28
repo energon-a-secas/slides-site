@@ -6,7 +6,7 @@
    says so plainly: "It checks density, not geometry: a passing deck can still
    overflow a slide, so the player click-through remains the final check."
 
-   This measures it instead. `.slide` and nineteen inner containers carry
+   This measures it instead. `.slide` and twenty-two inner containers carry
    `overflow: hidden`, so content past the box does not spill, warn, or leave a
    scrollbar. It simply disappears, and the author finds out in the room.
 
@@ -40,6 +40,9 @@ const CLIPPING = {
   '.timeline-track': 'the timeline',
   '.cmp-panes': 'the comparison',
   '.stats-grid': 'the stats row',
+  '.process-flow': 'the process cards',
+  '.org-chart': 'the org chart',
+  '.chart-figure': 'the chart',
 };
 
 /* A slide is 960x540 and the stage scales it to fit. Measuring has to happen

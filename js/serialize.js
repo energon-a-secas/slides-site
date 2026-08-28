@@ -8,6 +8,7 @@
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { resolveBg } from './state.js';
+import { marpBlock, pptxBlock } from './blocks.js';
 
 
 /* Page label, shared by the player and both serializers so the three cannot
@@ -125,8 +126,14 @@ export function deckToMarp(meta, slides, t) {
       }
       case 'timeline':
         if (slide.heading) lines.push(`## ${slide.heading}`);
+        // A ★ marks the milestone step; the per-step date rides in parentheses.
         (slide.steps || []).forEach((s, si) =>
-          lines.push(`${si + 1}. **${s.label || ''}** — ${s.text || ''}`));
+          lines.push(`${si + 1}. ${s.mark === true ? '★ ' : ''}**${s.label || ''}**${s.date ? ` (${s.date})` : ''}${s.text ? `: ${s.text}` : ''}`));
+        break;
+      case 'process':
+      case 'chart':
+      case 'orgchart':
+        marpBlock(type, slide, lines);
         break;
       case 'agenda': {
         lines.push(`## ${slide.heading || 'Agenda'}`);
@@ -498,20 +505,40 @@ export function deckToPptx(pptx, meta, slides, t, opts = {}) {
         });
         break;
 
-      case 'timeline':
+      case 'timeline': {
         if (slide.heading) {
           s.addText(slide.heading, { x: 0.4, y: 0.25, w: 9.2, h: 0.72, fontSize: 19, bold: true, color: C.white });
           s.addShape(pptx.ShapeType.line, { x: 0.4, y: 1.05, w: 9.2, h: 0, line: { color: C.line, width: 1, transparency: 85 } });
         }
-        (slide.steps || []).forEach((st, si) => {
-          const count = (slide.steps || []).length;
+        /* Dates ride above the axis, so a dated track shifts the whole row
+           down; an undated deck keeps the exact layout it always had. A
+           marked step draws an accent-ringed star instead of a numbered dot. */
+        const stepList = slide.steps || [];
+        const hasDates = stepList.some(st => st?.date);
+        const dotY = hasDates ? 1.62 : 1.3;
+        stepList.forEach((st, si) => {
+          const count = stepList.length;
           const colW = 9.2 / count;
           const x = 0.4 + si * colW;
-          s.addShape(pptx.ShapeType.ellipse, { x: x + colW / 2 - 0.2, y: 1.3, w: 0.4, h: 0.4, fill: { color: C.accent }, line: { type: 'none' } });
-          s.addText(String(si + 1), { x: x + colW / 2 - 0.2, y: 1.3, w: 0.4, h: 0.4, fontSize: 11, bold: true, color: C.on_accent, align: 'center', valign: 'middle' });
-          s.addText(String(st.label || ''), { x, y: 1.85, w: colW, h: 0.35, fontSize: 9, bold: true, color: C.accent, align: 'center' });
-          s.addText(String(st.text || ''), { x, y: 2.2, w: colW, h: 0.7, fontSize: 10, color: C.body, align: 'center', wrap: true });
+          if (st?.date)
+            s.addText(String(st.date), { x, y: 1.22, w: colW, h: 0.3, fontSize: 8, color: C.muted, align: 'center', valign: 'middle' });
+          if (st?.mark === true) {
+            s.addShape(pptx.ShapeType.ellipse, { x: x + colW / 2 - 0.2, y: dotY, w: 0.4, h: 0.4, fill: { color: C.bg2 }, line: { color: C.accent, width: 1.5 } });
+            s.addText('★', { x: x + colW / 2 - 0.2, y: dotY, w: 0.4, h: 0.4, fontSize: 12, bold: true, color: C.accent, align: 'center', valign: 'middle' });
+          } else {
+            s.addShape(pptx.ShapeType.ellipse, { x: x + colW / 2 - 0.2, y: dotY, w: 0.4, h: 0.4, fill: { color: C.accent }, line: { type: 'none' } });
+            s.addText(String(si + 1), { x: x + colW / 2 - 0.2, y: dotY, w: 0.4, h: 0.4, fontSize: 11, bold: true, color: C.on_accent, align: 'center', valign: 'middle' });
+          }
+          s.addText(String(st.label || ''), { x, y: dotY + 0.55, w: colW, h: 0.35, fontSize: 9, bold: true, color: C.accent, align: 'center' });
+          s.addText(String(st.text || ''), { x, y: dotY + 0.9, w: colW, h: 0.7, fontSize: 10, color: C.body, align: 'center', wrap: true });
         });
+        break;
+      }
+
+      case 'process':
+      case 'chart':
+      case 'orgchart':
+        pptxBlock(type, { pptx, s, slide, C, t });
         break;
 
       case 'agenda': {

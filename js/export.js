@@ -36,7 +36,15 @@ export function exportHTML() {
   const slideMarkup = slides.map((slide, i) => {
     const el = renderSlide(slide, i, slides.length);
     el.style.cssText = 'max-width:min(92vw,calc(92vh*16/9));border-radius:4px;';
-    return `<div class="fs-slide${i === 0 ? ' active' : ''}">${el.outerHTML}</div>`;
+    /* The handout path. On screen these two are invisible (`display:contents`
+       and `display:none`); the print stylesheet below turns each slide into a
+       page with its speaker note under it. Same trick as the footer kit's
+       disclaimer: content held out of the way on screen, restored in flow for
+       print, so the note field finally reaches paper. */
+    const note = slide.note
+      ? `<section class="print-note"><span class="print-note-label">Speaker note · slide ${i + 1}</span><p>${esc(String(slide.note)).replace(/\n/g, '<br>')}</p></section>`
+      : '';
+    return `<div class="fs-slide${i === 0 ? ' active' : ''}"><div class="print-box">${el.outerHTML}</div>${note}</div>`;
   }).join('\n');
 
   /* Two bugs lived in the old one-liner. styleSheets[0] is the CDN reset, which
@@ -72,9 +80,25 @@ ${inlineStyle}
 body{overflow:hidden;display:flex;align-items:center;justify-content:center;height:100vh;background:#000;}
 .fs-slide{display:none;position:absolute;}
 .fs-slide.active{display:flex;}
+.print-box{display:contents;}
+.print-note{display:none;}
 .controls{position:fixed;bottom:18px;display:flex;align-items:center;gap:12px;z-index:10;}
 .controls .nav-btn{width:36px;height:36px;font-size:1rem;}
 #ctr{font-size:.82rem;color:rgba(255,255,255,.4);min-width:60px;text-align:center;}
+/* Handout: one slide per page, its speaker note beneath. 0.7 scales the fixed
+   960x540 canvas under both A4 and Letter printable widths; the box reserves
+   the scaled size because transform does not affect layout. */
+@media print {
+  body{display:block;height:auto;overflow:visible;background:#fff;}
+  .controls{display:none;}
+  .fs-slide,.fs-slide.active{display:block;position:static;page-break-after:always;break-inside:avoid;}
+  .fs-slide:last-child{page-break-after:auto;}
+  .print-box{display:block;position:relative;width:672px;height:378px;margin:0 auto;overflow:hidden;}
+  .print-box .slide{position:absolute;left:0;top:0;transform:scale(.7);transform-origin:top left;max-width:none!important;border-radius:0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .print-note{display:block;width:672px;margin:14px auto 0;padding:10px 14px;border-left:3px solid #999;color:#111;font-size:12px;line-height:1.5;}
+  .print-note p{margin:0;}
+  .print-note-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#666;margin-bottom:4px;}
+}
 </style>
 </head>
 <body>

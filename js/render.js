@@ -4,6 +4,7 @@
 
 import { state, THEMES, applyTheme, applyPattern, themeWithBrand, resolveBg } from './state.js';
 import { esc, inlineMd, scaleSlide } from './utils.js';
+import { htmlBlock } from './blocks.js';
 import { pageLabel } from './serialize.js';
 import { parseYAML, validate } from './parser.js';
 
@@ -188,15 +189,28 @@ export function renderSlide(slide, index, total) {
       break;
     }
     case 'timeline': {
-      const steps = (slide.steps || []).map((s, si) => `
+      /* `date:` gives a step a calendar label above the axis, and `mark: true`
+         renders it as a milestone (an accent-ringed star) instead of the
+         numbered dot, so a roadmap can show which node is the release. Every
+         step gets the date row once any step has one, or the dots misalign. */
+      const stepList = slide.steps || [];
+      const hasDates = stepList.some(st => st?.date);
+      const steps = stepList.map((st, si) => `
         <div class="timeline-step">
-          <div class="timeline-dot">${si + 1}</div>
-          <div class="timeline-label">${esc(s.label || '')}</div>
-          <div class="timeline-text">${esc(s.text || '')}</div>
+          ${hasDates ? `<div class="timeline-date">${esc(st?.date || '')}</div>` : ''}
+          <div class="timeline-dot${st?.mark === true ? ' is-mark' : ''}">${st?.mark === true ? '★' : si + 1}</div>
+          <div class="timeline-label">${esc(st?.label || '')}</div>
+          <div class="timeline-text">${esc(st?.text || '')}</div>
         </div>`).join('');
       el.innerHTML = `
         ${slide.heading ? `<div class="s-heading">${esc(slide.heading)}</div>` : ''}
-        <div class="timeline-track">${steps}</div>`;
+        <div class="timeline-track${hasDates ? ' has-dates' : ''}">${steps}</div>`;
+      break;
+    }
+    case 'process':
+    case 'chart':
+    case 'orgchart': {
+      el.innerHTML = htmlBlock(type, slide, themeWithBrand(state.currentTheme, state.meta.brand));
       break;
     }
     case 'columns': {

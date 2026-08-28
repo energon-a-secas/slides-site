@@ -1,0 +1,115 @@
+# Round-10 fixture: every feature from queue items 21 to 24 on one deck.
+# exporters.test.mjs reads it, and check-exports.mjs / validate.mjs accept it
+# as a path. It must validate with zero warnings; a rule change that breaks
+# that fails the test suite rather than a deck in someone's browser.
+presentation:
+  title: "Ingest Cutover Readout"
+  subtitle: "Process, charts, the team, and the road"
+  author: "Platform"
+  date: "2026-08"
+  theme: neorgon
+
+  slides:
+    - type: title
+      heading: "Ingest Cutover Readout"
+      subtitle: "Process, charts, the team, and the road"
+
+    - type: process
+      heading: "Cutover runs in four gated steps"
+      steps:
+        - label: "Shadow"
+          text: "Mirror traffic to the new path and compare results"
+          date: "2026-09"
+          owner: "Core team"
+        - label: "Cut over"
+          text: "Switch reads to the subscription"
+          date: "2026-10"
+          owner: "Core team"
+          current: true
+        - label: "Backfill"
+          text: "Replay the gap window"
+          date: "2026-10"
+          owner: "Data"
+        - label: "Remove"
+          text: "Delete the polling loop"
+          date: "2026-11"
+          owner: "Infra"
+      note: "Name the gate criteria for each step if asked."
+
+    - type: chart
+      heading: "Daily requests fall after the cutover"
+      chart: bar
+      unit: "requests/day"
+      labels: ["June", "July", "August"]
+      series:
+        - name: "Polling"
+          values: [210000, 190000, 40000]
+        - name: "Events"
+          values: [1000, 30000, 160000]
+      note: "August is a partial month."
+
+    - type: chart
+      heading: "Storage cost sits mostly in retries"
+      chart: pie
+      unit: "USD/month"
+      labels: ["Retries", "Hot copies", "Archive"]
+      series:
+        - name: "Monthly"
+          values: [1400, 600, 260]
+
+    - type: chart
+      heading: "Latency drops below the one-second line"
+      chart: line
+      unit: "seconds p95"
+      labels: ["W1", "W2", "W3", "W4"]
+      series:
+        - name: "Reads"
+          values: [4.8, 3.1, 1.2, 0.7]
+        - name: "Writes"
+          values: [5.2, 4.0, 2.1, 0.9]
+      note: "The W3 dip is the shadow phase ending."
+
+    - type: orgchart
+      heading: "Nine people own the cutover"
+      root:
+        name: "Dana Reyes"
+        role: "Director"
+        reports:
+          - name: "Jane Smith"
+            role: "Platform lead"
+            reports:
+              - name: "Alex Kim"
+                role: "Data"
+              - name: "Noa Levi"
+                role: "Ingest"
+          - name: "Sam Ortiz"
+            role: "Design"
+            reports:
+              - name: "Rin Sato"
+                role: "Research"
+          - name: "Lee Park"
+            role: "SRE lead"
+            reports:
+              - name: "Mia Chen"
+                role: "On call"
+      note: "Names are placeholders."
+
+    - type: timeline
+      heading: "The release lands in October"
+      steps:
+        - label: "Shadow"
+          text: "Both paths run"
+          date: "2026-09"
+        - label: "Cut over"
+          text: "Reads switch"
+          date: "2026-10-06"
+          mark: true
+        - label: "Remove"
+          text: "Loop deleted"
+          date: "2026-11"
+      note: "The starred step is the release."
+
+    - type: cta
+      heading: "Approve the cutover date"
+      action: "Confirm the October date in the thread"
+      subtext: "Objections before Friday"

@@ -301,6 +301,86 @@ export function validate(slides, meta) {
         add('info', n, 'Compare: a frame with no `src` renders a placeholder. Fine while drafting.');
     }
 
+    if (type === 'timeline' && dense) {
+      const steps = slide.steps || [];
+      if (steps.length > 6)
+        add('warn', n, `Timeline: ${steps.length} steps. Past 6 the axis is a table, not a road.`);
+      steps.forEach((st, si) => {
+        if (st?.mark !== undefined && typeof st.mark !== 'boolean')
+          add('warn', n, `Timeline step ${si + 1}: mark: expects true or false, got ${JSON.stringify(st.mark)}.`);
+      });
+    }
+
+    if (type === 'process') {
+      const steps = slide.steps || [];
+      if (!steps.length) add('warn', n, 'Process: no `steps:` list.');
+      if (slide.flow !== undefined && !['columns', 'rows'].includes(slide.flow))
+        add('warn', n, `Unknown process flow "${slide.flow}", using columns. Flows: columns, rows.`);
+      if (dense && steps.length > 5)
+        add('warn', n, `Process: ${steps.length} steps. Past 5 the cards are strips; split the process or use a timeline.`);
+      if (dense && slide.flow === 'rows' && steps.length > 4)
+        add('warn', n, `Process: ${steps.length} steps in rows flow. Four rows fill the slide; the rest are cut off.`);
+      const current = steps.filter(st => st?.current === true).length;
+      if (current > 1)
+        add('warn', n, `Process: ${current} steps marked current. "Where we are" is one place.`);
+      steps.forEach((st, si) => {
+        if (!st?.label) add('warn', n, `Process step ${si + 1}: no label. The header band is what the room reads.`);
+      });
+    }
+
+    if (type === 'chart') {
+      /* The three chart rules CLAUDE.md states: at most 6 series, a legend
+         (every series named), and a stated unit. The structural checks stay on
+         in the appendix; only the series cap is a density rule. */
+      const KINDS = ['bar', 'pie', 'line'];
+      const series = Array.isArray(slide.series) ? slide.series : [];
+      const labels = Array.isArray(slide.labels) ? slide.labels : [];
+      if (slide.chart !== undefined && !KINDS.includes(slide.chart))
+        add('warn', n, `Unknown chart "${slide.chart}", using bar. Kinds: ${KINDS.join(', ')}.`);
+      if (!series.length)
+        add('warn', n, 'Chart: no `series:` list. Each series needs a `name:` and a `values:` list.');
+      if (!slide.unit)
+        add('warn', n, 'Chart: no `unit:`. Say what the numbers are ("requests/day", "USD"), or the bars are just shapes.');
+      if (dense && series.length > 6)
+        add('warn', n, `Chart: ${series.length} series. Past 6 the legend outgrows the chart; split it or cut.`);
+      if (!labels.length && series.length)
+        add('info', n, 'Chart: no `labels:` list, so the points are numbered instead of named.');
+      if (slide.chart === 'pie' && series.length > 1)
+        add('warn', n, `Pie: ${series.length} series. A pie draws one; the others are dropped. Use bar to compare series.`);
+      series.forEach((sr, si) => {
+        const vals = Array.isArray(sr?.values) ? sr.values : [];
+        if (!vals.length)
+          add('warn', n, `Chart series ${si + 1}: no \`values:\` list.`);
+        else if (labels.length && vals.length !== labels.length)
+          add('warn', n, `Chart series "${sr?.name || si + 1}": ${vals.length} values for ${labels.length} labels.`);
+        if (vals.some(v => typeof v !== 'number' || Number.isNaN(v)))
+          add('warn', n, `Chart series "${sr?.name || si + 1}": non-numeric values are drawn as 0.`);
+        if (!sr?.name && slide.chart !== 'pie' && series.length > 1)
+          add('warn', n, `Chart series ${si + 1}: no name, so the legend cannot label it.`);
+      });
+    }
+
+    if (type === 'orgchart') {
+      const root = slide.root;
+      if (!root || typeof root !== 'object') {
+        add('warn', n, 'Orgchart: no `root:` node. It needs a `root:` with `name:`, `role:` and `reports:`.');
+      } else {
+        let nodes = 0, maxDepth = 0, unnamed = 0;
+        (function walk(pn, depth) {
+          if (!pn) return;
+          nodes += 1;
+          if (!pn.name) unnamed += 1;
+          maxDepth = Math.max(maxDepth, depth);
+          (pn.reports || []).forEach(c => walk(c, depth + 1));
+        })(root, 1);
+        if (dense && nodes > 12)
+          add('warn', n, `Orgchart: ${nodes} nodes. Past 12 it is unreadable on a projector; show one branch, or use a people slide.`);
+        if (maxDepth > 3)
+          add('warn', n, `Orgchart: ${maxDepth} levels. The layout draws 3; deeper reports are flattened into their branch list.`);
+        if (unnamed) add('warn', n, `Orgchart: ${unnamed} node(s) with no name.`);
+      }
+    }
+
 
     /* Headings that name a subject rather than stating a claim. Exempt: a title
        is a name, a qa heading is a prompt, an appendix marker is a signpost, and
