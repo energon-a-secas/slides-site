@@ -437,7 +437,7 @@ export function validate(slides, meta) {
     }
 
     if (slide.pattern !== undefined && slide.pattern !== 'none' && !PATTERNS[slide.pattern])
-      add('warn', n, `Unknown pattern "${slide.pattern}" — ignored. Available: ${Object.keys(PATTERNS).join(', ')}, none.`);
+      add('warn', n, `Unknown pattern "${slide.pattern}": ignored. Available: ${Object.keys(PATTERNS).join(', ')}, none.`);
   });
 
   /* Reported once, not per slide: the verb half of the test is a heuristic and
@@ -530,10 +530,10 @@ export function validate(slides, meta) {
 
   // Deck-level checks
   if (meta?.theme && !THEMES[meta.theme])
-    add('warn', null, `Unknown theme "${meta.theme}" — falling back to the current one. Available: ${Object.keys(THEMES).join(', ')}.`);
+    add('warn', null, `Unknown theme "${meta.theme}": falling back to the current one. Available: ${Object.keys(THEMES).join(', ')}.`);
 
   if (meta?.pattern && meta.pattern !== 'none' && !PATTERNS[meta.pattern])
-    add('warn', null, `Unknown pattern "${meta.pattern}" — ignored. Available: ${Object.keys(PATTERNS).join(', ')}, none.`);
+    add('warn', null, `Unknown pattern "${meta.pattern}": ignored. Available: ${Object.keys(PATTERNS).join(', ')}, none.`);
 
   if (meta?.brand) {
     const allowed = ['accent', 'bg', 'text', 'on_accent'];
@@ -542,7 +542,7 @@ export function validate(slides, meta) {
     } else {
       for (const k of Object.keys(meta.brand)) {
         if (!allowed.includes(k))
-          add('warn', null, `brand.${k} is not a brand key — ignored. Allowed: ${allowed.join(', ')}.`);
+          add('warn', null, `brand.${k} is not a brand key: ignored. Allowed: ${allowed.join(', ')}.`);
         else if (typeof meta.brand[k] !== 'string' || !meta.brand[k])
           add('warn', null, `brand.${k} must be a CSS color string.`);
       }
@@ -569,7 +569,7 @@ export function validate(slides, meta) {
           const [cn, cv, cBrand] = la === null ? [an, a, aBrand] : [bn, bv, bBrand];
           if (cBrand && !unhexed.has(cn)) {
             unhexed.add(cn);
-            add('info', null, `brand ${cn} "${cv}" is not a hex color — contrast unchecked. Use #rrggbb to get the check.`);
+            add('info', null, `brand ${cn} "${cv}" is not a hex color: contrast unchecked. Use #rrggbb to get the check.`);
           }
           continue;
         }
@@ -578,7 +578,7 @@ export function validate(slides, meta) {
           const from = (name, isBrand) =>
             isBrand ? '' : (name === 'on_accent' ? ` (${name} is the default #ffffff)` : ` (${name} from the ${themeName} theme)`);
           add(level, null,
-            `brand contrast: ${an} on ${bn} is ${ratio.toFixed(1)}:1 — below ${min}:1${from(an, aBrand)}${from(bn, bBrand)}.`);
+            `brand contrast: ${an} on ${bn} is ${ratio.toFixed(1)}:1, below ${min}:1${from(an, aBrand)}${from(bn, bBrand)}.`);
         }
       }
     }
@@ -602,13 +602,13 @@ export function validate(slides, meta) {
   }
 
   if (meta?.logo_pos && !['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(meta.logo_pos))
-    add('warn', null, `Unknown logo_pos "${meta.logo_pos}" — using the default (top-right). Corners: top-left, top-right, bottom-left, bottom-right.`);
+    add('warn', null, `Unknown logo_pos "${meta.logo_pos}": using the default (top-right). Corners: top-left, top-right, bottom-left, bottom-right.`);
 
   if (meta?.logo_size && (typeof meta.logo_size !== 'number' || meta.logo_size < 16 || meta.logo_size > 240))
-    add('warn', null, `logo_size ${JSON.stringify(meta.logo_size)} — expected a pixel height between 16 and 240; using the default. Sizes the title-slide logo only; the stamp is logo_stamp_size.`);
+    add('warn', null, `logo_size ${JSON.stringify(meta.logo_size)}, expected a pixel height between 16 and 240; using the default. Sizes the title-slide logo only; the stamp is logo_stamp_size.`);
 
   if (meta?.logo_stamp_size && (typeof meta.logo_stamp_size !== 'number' || meta.logo_stamp_size < 12 || meta.logo_stamp_size > 120))
-    add('warn', null, `logo_stamp_size ${JSON.stringify(meta.logo_stamp_size)} — expected a pixel height between 12 and 120; using the default (30).`);
+    add('warn', null, `logo_stamp_size ${JSON.stringify(meta.logo_stamp_size)}, expected a pixel height between 12 and 120; using the default (30).`);
 
   /* `./brand.png` was accepted here and has exactly the problem the message
      describes: a relative path resolves against wherever the player is served,

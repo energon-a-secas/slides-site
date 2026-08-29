@@ -198,7 +198,7 @@ The coaching panel (click **Audit** in the toolbar) checks:
 - Missing CTA on the final slide
 - First slide not of type `title`
 
-Warnings appear inline. Fix them or dismiss them — the deck still exports either way.
+Warnings appear inline. Fix them or dismiss them. The deck still exports either way.
 
 ---
 

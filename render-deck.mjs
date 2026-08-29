@@ -46,7 +46,7 @@ const baseDir = argv.includes('--base') ? resolve(argv[argv.indexOf('--base') + 
 
 if (!inputs.length || flags.has('--help')) {
   console.log(`
-render-deck.mjs — build a deck without opening the app
+render-deck.mjs: build a deck without opening the app
 
   node render-deck.mjs <deck.yaml | directory> [more...] [formats] [--out DIR]
 

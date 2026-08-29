@@ -57,7 +57,7 @@ async function fetchText(url) {
 if (fresh) {
   const root = target || here;
   if (!existsSync(join(root, 'js', 'parser.js'))) {
-    console.log(`no local checkout at ${root} — nothing to be stale: standalone runs fetch the live rules`);
+    console.log(`no local checkout at ${root}: nothing to be stale: standalone runs fetch the live rules`);
     process.exit(0);
   }
   const sha = (s) => createHash('sha256').update(s.replace(/\r\n/g, '\n')).digest('hex').slice(0, 12);
@@ -75,11 +75,11 @@ if (fresh) {
     if (!same) differs += 1;
   }
   if (differs) {
-    console.log(`\n${differs} file(s) differ from ${SITE} — this checkout validates against different`);
+    console.log(`\n${differs} file(s) differ from ${SITE}: this checkout validates against different`);
     console.log('rules (themes, patterns, density) than the live player. Pull if behind; push if ahead.');
     process.exit(1);
   }
-  console.log(`\ncurrent with ${SITE} — themes, patterns, and density rules all match`);
+  console.log(`\ncurrent with ${SITE}: themes, patterns, and density rules all match`);
   process.exit(0);
 }
 
@@ -96,7 +96,7 @@ try {
   try {
     jsyaml = createRequire(import.meta.url)(shim);
   } catch {
-    console.error(`js-yaml not installed — fetching the player's build (${JSYAML_CDN})`);
+    console.error(`js-yaml not installed: fetching the player's build (${JSYAML_CDN})`);
     writeFileSync(shim, await fetchText(JSYAML_CDN));
     jsyaml = createRequire(import.meta.url)(shim);
   }
@@ -111,7 +111,7 @@ let parser;
 try {
   parser = await import(pathToFileURL(join(here, 'js', 'parser.js')).href);
 } catch {
-  console.error(`js/parser.js not found locally — fetching the player's copy from ${SITE}`);
+  console.error(`js/parser.js not found locally: fetching the player's copy from ${SITE}`);
   const cache = join(tmpdir(), 'slides-site-validate', 'js');
   mkdirSync(cache, { recursive: true });
   for (const f of ['parser.js', 'state.js']) {
@@ -126,7 +126,7 @@ const tag = { warn: 'WARN', info: 'info' };
 function checkDeck(text, label) {
   const doc = parser.parseYAML(text);
   if (doc.error) {
-    console.log(`${label}: unreadable deck — ${doc.error}`);
+    console.log(`${label}: unreadable deck, ${doc.error}`);
     return { unreadable: true, warns: 0 };
   }
   const findings = parser.validate(doc.slides, doc.meta);
@@ -144,7 +144,7 @@ function checkDeck(text, label) {
     console.log('');
   }
   const warns = findings.filter((f) => f.level === 'warn').length;
-  console.log(`${label}: ${doc.slides.length} slides — ${warns} warning(s), ${findings.length - warns} note(s)`);
+  console.log(`${label}: ${doc.slides.length} slides, ${warns} warning(s), ${findings.length - warns} note(s)`);
   return { unreadable: false, warns };
 }
 
@@ -184,7 +184,7 @@ for (const [p, text] of decks) {
   totalWarns += r.warns;
   unreadable += r.unreadable ? 1 : 0;
 }
-console.log(`\n${decks.length} deck(s) — ${totalWarns} warning(s), ${unreadable} unreadable`);
+console.log(`\n${decks.length} deck(s): ${totalWarns} warning(s), ${unreadable} unreadable`);
 /* Say what was NOT checked. These rules are density rules; whether the content
    physically fits its 960x540 box needs a layout engine, which a CLI does not
    have. The app measures it in the audit panel's Fit section. Reporting a clean

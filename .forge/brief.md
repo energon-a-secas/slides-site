@@ -1,4 +1,4 @@
-# Brief — Round 8: logo stamp/size/placeholder
+# Brief: Round 8: logo stamp/size/placeholder
 
 Started 2026-08-12 18:24. Maintained by the `task` skill; read by `debrief` and `writeup`.
 
@@ -25,19 +25,19 @@ Round 8: logo stamp/size/placeholder
 
 - `2026-08-12 18:24` logo_pos/logo_size/placeholder shipped + verified (110px monogram on title, bottom-left stamp via computed styles, both bad-value warnings fire); pushed to slides-site
 
-- `2026-08-12 23:02` stream **slides-contrast** done — WCAG check in parser.js validate(); verified CLI+browser; pushed as c6215cd via https workaround
+- `2026-08-12 23:02` stream **slides-contrast** done: WCAG check in parser.js validate(); verified CLI+browser; pushed as c6215cd via https workaround
 
-- `2026-08-19 21:27` stream **deck-rail** done — footer:rail renders on every non-title slide; verified in player + Reveal fixed rail + Marp footer directive + PPTX bottom text. Decks that declare neither key are byte-identical to before.
+- `2026-08-19 21:27` stream **deck-rail** done: footer:rail renders on every non-title slide; verified in player + Reveal fixed rail + Marp footer directive + PPTX bottom text. Decks that declare neither key are byte-identical to before.
 
-- `2026-08-19 21:27` stream **agenda** done — agenda auto derives from divider headings; verified it read 2 dividers in the smoke deck and 2 in the starter template. Section eyebrow shows 1 of 2 / 2 of 2.
+- `2026-08-19 21:27` stream **agenda** done: agenda auto derives from divider headings; verified it read 2 dividers in the smoke deck and 2 in the starter template. Section eyebrow shows 1 of 2 / 2 of 2.
 
-- `2026-08-19 21:27` stream **placeholder** done — image and media with no src render a labelled dashed frame; Marp emitted an empty ![]() until it was fixed to write the gap in words.
+- `2026-08-19 21:27` stream **placeholder** done: image and media with no src render a labelled dashed frame; Marp emitted an empty ![]() until it was fixed to write the gap in words.
 
-- `2026-08-19 21:27` stream **table** done — columns/rows/align/highlight/caption; PPTX uses a real a:tbl (verified by unzipping the generated file). Two CSS defects found by screenshot and fixed: the highlight bar repeated on every cell, and the caption floated away from the table.
+- `2026-08-19 21:27` stream **table** done: columns/rows/align/highlight/caption; PPTX uses a real a:tbl (verified by unzipping the generated file). Two CSS defects found by screenshot and fixed: the highlight bar repeated on every cell, and the caption floated away from the table.
 
-- `2026-08-19 21:27` stream **grid** done — 2-4 columns, cards or plain, optional glyph; columns derived from item count when unset.
+- `2026-08-19 21:27` stream **grid** done: 2-4 columns, cards or plain, optional glyph; columns derived from item count when unset.
 
-- `2026-08-19 21:27` stream **media** done — copy column beside a full-bleed figure, either side; rail padding handled per-type since the slide drops its own padding.
+- `2026-08-19 21:27` stream **media** done: copy column beside a full-bleed figure, either side; rail padding handled per-type since the slide drops its own padding.
 
 - `2026-08-19 21:27` PPTX could not be byte-verified through the browser: pptxgenjs writeFile never resolves in the preview sandbox and does not route its blob through URL.createObjectURL, so the intercept caught nothing. Verified instead by replaying the exact option shapes (addTable cell fills, dashed-line shapes, transparency) under node, which produced a 70,262-byte valid zip with 4 slide parts and a real <a:tbl> holding the cell text. The in-app export completes with no console error, but its toast fires without awaiting writeFile, so the toast alone is not evidence.
 
@@ -45,19 +45,19 @@ Round 8: logo stamp/size/placeholder
 
 - `2026-08-19 21:27` The agenda auto guard tripped on the starter template itself, which had a single divider. Fixed the template by giving it a real second section rather than weakening the check.
 
-- `2026-08-19 21:51` stream **examples** done — 7 decks now live as files under deck-library/decks/, so 'node validate.mjs deck-library/decks' checks every example the library hands out (all 7 clean). 4 are new bases: exec review, design review, workshop (light theme), launch (the gradient one). Library page fetches them instead of holding escaped strings; added Copy YAML with an execCommand fallback after the Clipboard API refused on an unfocused document. 3 demo SVGs so image/media/logo show something real.
+- `2026-08-19 21:51` stream **examples** done: 7 decks now live as files under deck-library/decks/, so 'node validate.mjs deck-library/decks' checks every example the library hands out (all 7 clean). 4 are new bases: exec review, design review, workshop (light theme), launch (the gradient one). Library page fetches them instead of holding escaped strings; added Copy YAML with an execCommand fallback after the Clipboard API refused on an unfocused document. 3 demo SVGs so image/media/logo show something real.
 
-- `2026-08-19 21:51` stream **backgrounds** done — llms.txt hand-authored (marker removed; generator dry-run now lists it under 'hand-authored, left untouched') with a three-layer explanation of theme vs background vs pattern. The trap it documents is enforced: a slide background whose average hex luminance falls under 4.5:1 against the deck's text colour now warns with the ratio. Tripped it on a meadow deck with 'background: ocean' (1.1:1); launch.yaml with four gradients on a dark theme stays clean.
+- `2026-08-19 21:51` stream **backgrounds** done: llms.txt hand-authored (marker removed; generator dry-run now lists it under 'hand-authored, left untouched') with a three-layer explanation of theme vs background vs pattern. The trap it documents is enforced: a slide background whose average hex luminance falls under 4.5:1 against the deck's text colour now warns with the ratio. Tripped it on a meadow deck with 'background: ocean' (1.1:1); launch.yaml with four gradients on a dark theme stays clean.
 
 - `2026-08-19 21:51` Catalog panel added (js/catalog.js): live previews drawn by renderSlide itself so they cannot go stale, plus real gradient and pattern swatches that write the YAML key on click, scoped to the slide or the deck. Two defects found while building it: 'background: none' would have made a slide transparent rather than clearing the override, so 'clear' deletes the key; and one-shot rAF scaling left every preview unscaled when the panel opened in a zero-width viewport, so it observes the frames instead.
 
 - `2026-08-19 21:59` Removed the crossed diagonals from the media placeholder at the user's request: they read as a callback to the source template's mockup frames. The frame is now a plain dashed panel with its label.
 
-- `2026-08-19 22:18` stream **types-r10** done — matrix, people, checklist, compare, appendix across player + audit + Marp + PPTX + Reveal. Appendix is the structural one: page numbers switch to an A-series, the main count stops at the marker, and density plus flow checks read the main deck only. Verified by a 6-bullet backup slide in postmortem.yaml that passes clean and would warn in the talk.
+- `2026-08-19 22:18` stream **types-r10** done: matrix, people, checklist, compare, appendix across player + audit + Marp + PPTX + Reveal. Appendix is the structural one: page numbers switch to an A-series, the main count stops at the marker, and density plus flow checks read the main deck only. Verified by a 6-bullet backup slide in postmortem.yaml that passes clean and would warn in the talk.
 
-- `2026-08-19 22:18` stream **cat-setup** done — Catalog now has nine sections: start from a deck, structures, types, gradients, patterns, theme, setup, brand, glyphs. Theme swatches switch the live preview and write theme:; setup fields write or clear deck keys; brand pickers write a nested brand: block and show the live ratio, red below threshold (caught 2.9:1 on text-on-accent during testing); glyphs insert at the cursor.
+- `2026-08-19 22:18` stream **cat-setup** done: Catalog now has nine sections: start from a deck, structures, types, gradients, patterns, theme, setup, brand, glyphs. Theme swatches switch the live preview and write theme:; setup fields write or clear deck keys; brand pickers write a nested brand: block and show the live ratio, red below threshold (caught 2.9:1 on text-on-accent during testing); glyphs insert at the cursor.
 
-- `2026-08-19 22:18` stream **decks-r10** done — postmortem, onboarding, all-hands, qbr, conf-talk. All 12 decks validate clean and now live behind decks/index.json, a manifest shared by the library page and the Catalog so the two lists cannot disagree.
+- `2026-08-19 22:18` stream **decks-r10** done: postmortem, onboarding, all-hands, qbr, conf-talk. All 12 decks validate clean and now live behind decks/index.json, a manifest shared by the library page and the Catalog so the two lists cannot disagree.
 
 - `2026-08-19 22:18` Toolbar restructured at the user's request: 13 flat buttons became Theme, Catalog, Export menu, Publish menu, Audit/Overview/Present, and an overflow menu, on one delegated click handler so a new group needs no JS. The + Slide dropdown and the Sample button were the two places that duplicated lists; both now route through the Catalog and deck-library/decks, and the hardcoded sample deck in events.js is gone.
 
@@ -81,7 +81,7 @@ Round 8: logo stamp/size/placeholder
 
 - `2026-08-20 08:05` VERIFIED COUPLING: js/audit.js attaches its coaching tips by regex-matching the prose of js/parser.js's own warning strings, e.g. /bullets.*Aim for 5 or fewer/ and /Bullet d+: d+ words/. Rewording any warning silently unhooks its tip, with nothing failing. That is the strongest argument for giving every finding a stable code field, which also makes the audit greppable in CI. Also verified: stats is documented as 'up to 4 metrics' and timeline steps are documented as a sequence, and neither has a single rule in parser.js; 6 of the 21 slide types have no parser branch at all; and split/columns never validate that their columns are labelled, which is the exact flaw that made a competitor's own example deck unreadable.
 
-- `2026-08-20 08:05` stream **skill-recon** done — 4 agents, 7 skills requested, 5 installed + 1 fetched by hand + 1 unavailable. Yield is low but real: 4 agents independently converged on the speaker-note export loss, 3 independently argued against building a mermaid/diagram type (its own authors document it as rendering blank, Marp has no built-in support, pptxgenjs would forfeit editable text, and mermaid's parser breaks on accented characters, which matters for Spanish decks). New verified gaps: alt text unchecked, audit tips coupled to warning prose by regex, stats/timeline limits documented but unenforced, unlabelled split columns. Two skills were worthless: one is a content-free generated stub requesting Write/Edit/Bash, the other a persona wrapper with a silent glob loader.
+- `2026-08-20 08:05` stream **skill-recon** done: 4 agents, 7 skills requested, 5 installed + 1 fetched by hand + 1 unavailable. Yield is low but real: 4 agents independently converged on the speaker-note export loss, 3 independently argued against building a mermaid/diagram type (its own authors document it as rendering blank, Marp has no built-in support, pptxgenjs would forfeit editable text, and mermaid's parser breaks on accented characters, which matters for Spanish decks). New verified gaps: alt text unchecked, audit tips coupled to warning prose by regex, stats/timeline limits documented but unenforced, unlabelled split columns. Two skills were worthless: one is a content-free generated stub requesting Write/Edit/Bash, the other a persona wrapper with a silent glob loader.
 
 - `2026-08-20 08:06` Deck review, all verified by me against the files: standup.yaml presents 'None' and 'Need help with: [blocker]' as two bullets on the same slide, a contradiction a forker would present verbatim. conf-talk.yaml:83 closes with 'the link is on the last slide' while that CTA IS the last main slide and the file contains zero URLs, so the audience photographs a pointer to nothing. type: columns is used in ZERO of 112 slides, a shipped type the shop window never demonstrates. exec-review.yaml:49 labels a media slide 'Cost dashboard by service' over an asset whose own burned-in text reads 'Delivery latency' and 'events / day'. I wrote three of those four.
 
@@ -89,7 +89,7 @@ Round 8: logo stamp/size/placeholder
 
 - `2026-08-20 08:06` Measured across the library: 48 content-slide headings produce 2 firm assertions. All 21 dividers, all 9 CTA headings and all 8 agenda headings are topic labels. That independently reproduces the 44-to-47-of-48 count from the two research agents last round, by a third method (hand classification with a stated rule). Three separate passes now agree, so the assertion-heading work is the best-evidenced item in the plan, and the library rewrite it implies is confirmed as its real cost.
 
-- `2026-08-20 08:29` stream **review-agents** done — 3 agents: decks, UI, exports. The UI pass found five blockers I had shipped, all now fixed and verified in a browser: ?yaml= was decoded twice so five of twelve library decks opened an empty editor (URLSearchParams.get already decodes, and any lone % threw URIError); the Catalog sat at z-index 60 under a 200 header so three of four tabs and the close button were unclickable; the standalone HTML export read document.styleSheets[0], which is the cross-origin CDN reset, so it threw SecurityError and produced nothing while a stale toast read as success; every dialog rendered at 0,0 and 6% opaque because the global reset zeroed the margin that centres a modal dialog and --surface-2 is translucent; and the editor was a WCAG 2.1.2 keyboard trap because preventDefault ran before the Shift branch.
+- `2026-08-20 08:29` stream **review-agents** done: 3 agents: decks, UI, exports. The UI pass found five blockers I had shipped, all now fixed and verified in a browser: ?yaml= was decoded twice so five of twelve library decks opened an empty editor (URLSearchParams.get already decodes, and any lone % threw URIError); the Catalog sat at z-index 60 under a 200 header so three of four tabs and the close button were unclickable; the standalone HTML export read document.styleSheets[0], which is the cross-origin CDN reset, so it threw SecurityError and produced nothing while a stale toast read as success; every dialog rendered at 0,0 and 6% opaque because the global reset zeroed the margin that centres a modal dialog and --surface-2 is translucent; and the editor was a WCAG 2.1.2 keyboard trap because preventDefault ran before the Shift branch.
 
 - `2026-08-20 08:29` Export integrity fixed and verified by unzipping generated files. E1: images are now real PNGs (file(1) reports 'PNG image data, 1600 x 1000' where it previously reported 'SVG Scalable Vector Graphics image' under a .png name); the serializer takes an optional resolveImage hook so the browser rasterises through a canvas and the CLI shells out to whatever is installed, and with no rasteriser it reports and skips rather than embedding a broken picture. E2: no /Users/ path appears in any of the 12 generated decks, and the PPTX alt-text field now carries the deck's real alt text. E3: dim composites to 3E4451 over the background instead of FFFFFF, so heading F9F9F9 > body CACACA > rail 3E4451 restores the hierarchy that had inverted. E4: notesSlide4.xml now carries the actual speaker note. E6: the Marp table band renders at the deck background instead of pure white, verified by sampling pixels in the rendered PDF.
 
@@ -139,7 +139,7 @@ Round 8: logo stamp/size/placeholder
 
 ---
 
-## Run — 2026-08-19 21:11
+## Run: 2026-08-19 21:11
 
 **Problem.** Round 9: deck chrome (footer rail, classification, agenda, section progress) + three layout types (table, grid, media)
 

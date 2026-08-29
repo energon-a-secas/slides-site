@@ -110,7 +110,7 @@ export function onLogoFile(e) {
   e.target.value = '';
   if (!file) return;
   if (file.size > 500 * 1024) {
-    showToast('Logo is over 500 KB — resize it first; it gets embedded into the YAML');
+    showToast('Logo is over 500 KB: resize it first; it gets embedded into the YAML');
     return;
   }
   const reader = new FileReader();
@@ -128,7 +128,7 @@ export function onLogoFile(e) {
       : v.replace(/^( {2}title:[^\n]*)$/m, `$1\n${line}`);
     ta.value = v;
     update();
-    showToast(`Logo embedded (${Math.round(file.size / 1024)} KB) — add logo_all: true for a watermark on every slide`);
+    showToast(`Logo embedded (${Math.round(file.size / 1024)} KB), add logo_all: true for a watermark on every slide`);
   };
   reader.readAsDataURL(file);
 }

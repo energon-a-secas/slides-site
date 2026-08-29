@@ -93,7 +93,7 @@ function classify(text, warnings, isFirst) {
   if (rest.some(l => /^\s*>/.test(l))) {
     const q = rest.filter(l => /^\s*>/.test(l)).map(l => l.replace(/^\s*>\s?/, '')).join(' ').trim();
     let quote = q, source;
-    const sm = q.match(/\s+(?:—|--?)\s+([^—]+)$/);
+    const sm = q.match(/\s+(?:-|--?)\s+([^-]+)$/);
     if (sm) { source = sm[1].trim(); quote = q.slice(0, sm.index).trim(); }
     const s = { type: 'quote', text: quote };
     if (source) s.source = source;
