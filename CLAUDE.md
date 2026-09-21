@@ -25,8 +25,8 @@ presentation:
   subtitle: "..."         # optional
   author: "..."           # optional
   date: "YYYY-MM"         # optional
-  theme: "royal"          # optional deck-wide look — see "Deck themes" below
-  pattern: "dots"         # optional background texture: dots, grid, diagonal, rings, orbs — see "Patterns"
+  theme: "royal"          # optional deck-wide look; see "Deck themes" below
+  pattern: "dots"         # optional background texture: dots, grid, diagonal, rings, orbs; see "Patterns"
   logo: "https://…"       # optional: URL, data: URI (player's ◉ Logo button embeds a local file), self-hosted path, or "placeholder"
   logo_all: true          # optional: stamp the logo on every non-title slide
   logo_pos: "bottom-left" # optional stamp corner: top-left, top-right (default), bottom-left, bottom-right
@@ -39,7 +39,7 @@ presentation:
   outcome: approve         # optional: inform | convince | approve | teach
   duration: 20             # optional: minutes for the talk itself, backup slides excluded
   big_idea: "One sentence the room can repeat afterwards."   # optional
-  brand:                  # optional brand colors, override the theme — see "Brand colors"
+  brand:                  # optional brand colors, override the theme; see "Brand colors"
     accent: "#e50914"
     # bg: "#0b0b0f"       # text: / on_accent: also accepted; nothing else is
 
@@ -75,7 +75,7 @@ presentation:
       text: "..."
       source: "..."
 
-    - type: divider        # section break — separates major topics
+    - type: divider        # section break: separates major topics
       heading: "..."
       subtitle: "..."
 
@@ -83,7 +83,7 @@ presentation:
       heading: "Questions?"
       subtext: "..."
 
-    - type: cta            # last slide — one clear action
+    - type: cta            # last slide: one clear action
       heading: "..."
       action: "..."        # the single thing to do
       subtext: "..."
