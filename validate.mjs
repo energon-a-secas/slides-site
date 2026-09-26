@@ -16,7 +16,8 @@
 // From any other repo, the published copy works standalone:
 //   curl -sO https://slides.neorgon.com/validate.mjs && node validate.mjs deck.yaml
 // When js/parser.js is not next to this file it is fetched from the live site,
-// and js-yaml (the same 4.1.0 the player loads) is fetched when not installed.
+// and js-yaml (the same 4.3.2 build the player loads, checked against the same
+// integrity hash) is fetched when not installed.
 //
 // Exit codes: 0 clean or info-only · 1 density warnings (or stale in --fresh) · 2 unreadable.
 
@@ -28,7 +29,11 @@ import { join, dirname, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const SITE = 'https://slides.neorgon.com';
-const JSYAML_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js';
+// Keep these two equal to the js-yaml <script> in index.html. The browser
+// checks the integrity attribute itself; Node does not, so the js-yaml fallback
+// below does it by hand before the fetched file is ever required.
+const JSYAML_CDN = 'https://cdn.jsdelivr.net/npm/js-yaml@4.3.2/dist/js-yaml.min.js';
+const JSYAML_SRI = 'sha384-uwLg6oO8ZhFG2SuQfgmkMtosjtrFYlkPspa/cXS+b3D8GLRTHMDl/mTwqImdlKQO';
 // The files that carry rules and features (themes, patterns, brand keys). A
 // checkout whose copies differ from the live site validates against different
 // rules than the player people actually present in.
@@ -92,14 +97,25 @@ try {
 } catch {
   const cache = join(tmpdir(), 'slides-site-validate');
   mkdirSync(cache, { recursive: true });
-  const shim = join(cache, 'js-yaml.cjs');
-  try {
-    jsyaml = createRequire(import.meta.url)(shim);
-  } catch {
+  /* The cache name carries the version, and the bytes are checked on every run,
+     so a copy cached from an older pin (4.1.0 lived at js-yaml.cjs) or a file
+     changed on disk is never required. The build is UMD: under require() it
+     fills module.exports instead of setting a global. */
+  const shim = join(cache, `js-yaml-${JSYAML_CDN.match(/@([\d.]+)\//)[1]}.cjs`);
+  const sri = (bytes) => `sha384-${createHash('sha384').update(bytes).digest('base64')}`;
+  const cached = existsSync(shim) ? readFileSync(shim) : null;
+  if (!cached || sri(cached) !== JSYAML_SRI) {
     console.error(`js-yaml not installed: fetching the player's build (${JSYAML_CDN})`);
-    writeFileSync(shim, await fetchText(JSYAML_CDN));
-    jsyaml = createRequire(import.meta.url)(shim);
+    const res = await fetch(JSYAML_CDN);
+    if (!res.ok) throw new Error(`${JSYAML_CDN} -> HTTP ${res.status}`);
+    const bytes = Buffer.from(await res.arrayBuffer());
+    if (sri(bytes) !== JSYAML_SRI) {
+      console.error(`${JSYAML_CDN} does not match its integrity hash (${JSYAML_SRI}): not running it`);
+      process.exit(2);
+    }
+    writeFileSync(shim, bytes);
   }
+  jsyaml = createRequire(import.meta.url)(shim);
 }
 globalThis.jsyaml = jsyaml;
 
